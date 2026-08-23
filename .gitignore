@@ -1,0 +1,26 @@
+# --- Node.js (backend + admin-dashboard) ---
+node_modules/
+npm-debug.log*
+.env
+dist/
+build/
+
+# --- Python (ai-service) ---
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+*.h5
+*.keras
+
+# --- Android (mobile-app) ---
+mobile-app/*.iml
+mobile-app/.gradle/
+mobile-app/local.properties
+mobile-app/.idea/
+mobile-app/build/
+
+# --- General ---
+.DS_Store
+*.log
+.vscode/
