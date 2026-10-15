@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/eco_cream_bg">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Analysis Complete"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/eco_text_dark" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="We've identified your item's eco-profile."
+            android:textSize="13sp"
+            android:textColor="@color/eco_text_gray" />
+
+        <TextView
+            android:id="@+id/tvNoResult"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No scan yet. Go to Home and tap Start AI Scan."
+            android:textColor="@color/eco_text_gray"
+            android:visibility="visible" />
+
+        <LinearLayout
+            android:id="@+id/resultCardContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:padding="20dp"
+            android:elevation="1dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/ivResultImage"
+                android:layout_width="match_parent"
+                android:layout_height="220dp"
+                android:scaleType="centerCrop"
+                android:background="@color/eco_border_gray"
+                android:contentDescription="Scanned clothing image"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="GARMENT CONDITION"
+                android:textSize="11sp"
+                android:textColor="@color/eco_text_gray" />
+
+            <TextView
+                android:id="@+id/tvResultCategory"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="REUSABLE"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/eco_dark_green"
+                android:layout_marginBottom="12dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Confidence"
+                android:textSize="12sp"
+                android:textColor="@color/eco_text_gray" />
+
+            <TextView
+                android:id="@+id/tvResultConfidence"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0%"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/eco_text_dark"
+                android:layout_marginBottom="16dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_points_badge"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Impact Bonus"
+                    android:textSize="13sp"
+                    android:textColor="@color/eco_dark_green" />
+
+                <TextView
+                    android:id="@+id/tvResultPointsLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Complete this to earn"
+                    android:textSize="11sp"
+                    android:textColor="@color/eco_dark_green" />
+
+                <TextView
+                    android:id="@+id/tvResultPoints"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="+0 pts"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/eco_dark_green" />
+            </LinearLayout>
+
+            <!-- Shown only after "Prepare for Donation" is tapped (reusable items) -->
+            <LinearLayout
+                android:id="@+id/verificationCodeContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:background="@drawable/bg_input"
+                android:padding="16dp"
+                android:layout_marginTop="16dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Show this code to the NGO staff"
+                    android:textSize="12sp"
+                    android:textColor="@color/eco_text_gray" />
+
+                <TextView
+                    android:id="@+id/tvVerificationCode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="000000"
+                    android:textSize="28sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/eco_dark_green"
+                    android:letterSpacing="0.2" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Points will be added once verified"
+                    android:textSize="11sp"
+                    android:textColor="@color/eco_text_gray" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnFindNGO"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_input"
+                app:backgroundTint="@android:color/transparent"
+                android:text="Find Nearest NGO"
+                android:textColor="@color/eco_text_dark" />
+
+            <Button
+                android:id="@+id/btnConfirmAction"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_button_primary"
+                app:backgroundTint="@android:color/transparent"
+                android:text="Confirm Action"
+                android:textColor="@color/eco_white"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,4 @@
+p22014403_db_user
+3Kcr63OwxZZGLNil
+
+mongodb+srv://<db_username>:3Kcr63OwxZZGLNil@cluster0.6tsmda4.mongodb.net/?appName=Cluster0

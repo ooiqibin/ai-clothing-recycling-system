@@ -1,0 +1,45 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Base application theme -->
+    <style name="Base.Theme.ClothingRecycleApp"
+        parent="Theme.Material3.DayNight.NoActionBar">
+
+        <!-- Primary button -->
+        <item name="materialButtonStyle">
+            @style/Widget.App.Button.Primary
+        </item>
+
+        <!-- Optional theme colors -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+    </style>
+
+
+    <!-- Primary Button -->
+    <style name="Widget.App.Button.Primary"
+        parent="Widget.MaterialComponents.Button">
+
+        <item name="backgroundTint">@color/eco_dark_green</item>
+        <item name="android:textColor">@color/eco_white</item>
+        <item name="cornerRadius">14dp</item>
+
+    </style>
+
+
+    <!-- Secondary / Outlined Button -->
+    <style name="Widget.App.Button.Secondary"
+        parent="Widget.MaterialComponents.Button.OutlinedButton">
+
+        <item name="android:textColor">@color/eco_text_dark</item>
+        <item name="strokeColor">@color/eco_border_gray</item>
+        <item name="backgroundTint">@color/eco_white</item>
+        <item name="cornerRadius">12dp</item>
+
+    </style>
+
+
+    <!-- Main application theme -->
+    <style name="Theme.ClothingRecycleApp"
+        parent="Base.Theme.ClothingRecycleApp" />
+
+</resources>

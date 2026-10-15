@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/eco_cream_bg"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="NGO Donation Verification"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/eco_dark_green"
+        android:layout_marginBottom="6dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enter the 6-digit code shown on the donor's app to confirm the donation."
+        android:textSize="13sp"
+        android:textColor="@color/eco_text_gray"
+        android:layout_marginBottom="24dp" />
+
+    <EditText
+        android:id="@+id/etVerificationCode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_input"
+        android:hint="000000"
+        android:inputType="number"
+        android:maxLength="6"
+        android:textSize="20sp"
+        android:gravity="center"
+        android:letterSpacing="0.3"
+        android:layout_marginBottom="16dp" />
+
+    <Button
+        android:id="@+id/btnVerify"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:background="@drawable/bg_button_primary"
+        app:backgroundTint="@android:color/transparent"
+        android:text="Verify Donation"
+        android:textColor="@color/eco_text_dark"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/btnScanQr"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/bg_input"
+        app:backgroundTint="@android:color/transparent"
+        android:text="Scan QR Code"
+        android:textColor="@color/eco_text_dark" />
+
+    <TextView
+        android:id="@+id/tvVerifyStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+</LinearLayout>

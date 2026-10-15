@@ -1,0 +1,9 @@
+
+Question
+How to verify if user done recycle and give points? same goes to damaged(disposal)
+
+Recycle give tips/locataion to disposal
+Damaged give location to disposal
+
+access blocked
+app is not following the tile usage policy of openstreetmap volunteer-run servers: osm.wiki/blocked

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/eco_cream_bg">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Item Details"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/eco_text_dark"
+            android:layout_marginBottom="16dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:padding="20dp"
+            android:elevation="1dp">
+
+            <ImageView
+                android:id="@+id/ivDetailImage"
+                android:layout_width="match_parent"
+                android:layout_height="220dp"
+                android:scaleType="centerCrop"
+                android:background="@color/eco_border_gray"
+                android:contentDescription="Item image"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="GARMENT CONDITION"
+                android:textSize="11sp"
+                android:textColor="@color/eco_text_gray" />
+
+            <TextView
+                android:id="@+id/tvDetailCategory"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="REUSABLE"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/eco_dark_green"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:id="@+id/tvDetailExplanation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textSize="13sp"
+                android:textColor="@color/eco_text_gray"
+                android:layout_marginBottom="16dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_points_badge"
+                android:padding="12dp"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:id="@+id/tvDetailStatusLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Status"
+                    android:textSize="13sp"
+                    android:textColor="@color/eco_dark_green" />
+
+                <TextView
+                    android:id="@+id/tvDetailStatusValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Pending"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/eco_dark_green" />
+            </LinearLayout>
+
+            <!-- REUSABLE: two choices -->
+            <LinearLayout
+                android:id="@+id/reusableChoiceContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <Button
+                    android:id="@+id/btnKeepMyself"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    style="@style/Widget.App.Button.Secondary"
+                    android:text="Keep for Myself (0 pts)" />
+
+                <Button
+                    android:id="@+id/btnDonateIt"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="10dp"
+                    android:text="Donate It (+10 pts)" />
+            </LinearLayout>
+
+            <!-- RECYCLABLE: photo proof -->
+            <LinearLayout
+                android:id="@+id/recyclableProofContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/ivProofPreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="160dp"
+                    android:scaleType="centerCrop"
+                    android:background="@color/eco_border_gray"
+                    android:layout_marginBottom="10dp"
+                    android:visibility="gone" />
+
+                <Button
+                    android:id="@+id/btnTakeProofPhoto"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="Take Photo of Recycled Result" />
+
+                <Button
+                    android:id="@+id/btnSubmitProof"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="10dp"
+                    android:text="Submit Proof (+5 pts)"
+                    android:enabled="false" />
+            </LinearLayout>
+
+            <!-- DAMAGED: simple confirm -->
+            <Button
+                android:id="@+id/btnConfirmDisposal"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Confirm Disposal (+1 pt)"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

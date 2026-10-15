@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/eco_cream_bg">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_button_primary"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Total Sustainability Impact"
+                android:textSize="12sp"
+                android:textColor="@color/eco_light_green" />
+
+            <TextView
+                android:id="@+id/tvTotalItems"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="0 items classified"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="@color/eco_white" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Eco-Tips"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/eco_text_dark" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_card"
+            android:padding="14dp"
+            android:text="💧 Wash in cold water to save energy."
+            android:textSize="13sp"
+            android:elevation="1dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_card"
+            android:padding="14dp"
+            android:text="🌬️ Air dry linen to preserve fibers."
+            android:textSize="13sp"
+            android:elevation="1dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:background="@drawable/bg_card"
+            android:padding="24dp"
+            android:layout_marginTop="20dp"
+            android:elevation="1dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Scan New Item"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/eco_text_dark" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center_horizontal"
+                android:text="Identify materials and discover the best eco-path for your clothing."
+                android:textSize="12sp"
+                android:textColor="@color/eco_text_gray" />
+
+            <Button
+                android:id="@+id/btnStartScan"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_button_primary"
+                android:text="Start AI Scan  →"
+                android:textColor="@color/eco_white"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Recent Contributions"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/eco_text_dark" />
+
+            <TextView
+                android:id="@+id/tvTotalPointsInline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:text="0 pts total"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="@color/eco_primary_green" />
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/recentContributionsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="10dp" />
+
+    </LinearLayout>
+</ScrollView>
