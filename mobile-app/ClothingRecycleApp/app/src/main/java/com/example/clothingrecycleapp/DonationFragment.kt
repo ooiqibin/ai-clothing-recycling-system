@@ -1,6 +1,7 @@
 package com.example.clothingrecycleapp
 
 import android.os.Bundle
+import androidx.appcompat.app.AlertDialog
 import android.graphics.Bitmap
 import android.view.LayoutInflater
 import android.view.View
@@ -55,7 +56,8 @@ class DonateFragment : Fragment(R.layout.fragment_donate) {
                             tvActiveBatchCode.text = body.activeBatch.verificationCode
                             rootView.findViewById<ImageView>(R.id.ivActiveBatchQr)
                                 .setImageBitmap(createQrBitmap(body.activeBatch.verificationCode))
-                            tvActiveBatchInfo.text = "${body.activeBatch.items.size} items • +${body.activeBatch.totalPoints} pts once verified"
+                            val centreLine = body.activeBatch.centre?.name?.let { "\nHand in at: $it" } ?: ""
+                            tvActiveBatchInfo.text = "${body.activeBatch.items.size} items • +${body.activeBatch.totalPoints} pts once verified$centreLine"
 
                         } else if (body.pendingItems.isEmpty()) {
                             tvEmptyBasket.visibility = View.VISIBLE
@@ -115,14 +117,61 @@ class DonateFragment : Fragment(R.layout.fragment_donate) {
         }
 
         button.isEnabled = false
+
+        // First ask the donor which centre they will hand the clothes to.
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = RetrofitClient.apiService.getDonationCentres()
+                val centres = if (response.isSuccessful) response.body()?.centers.orEmpty() else emptyList()
+
+                withContext(Dispatchers.Main) {
+                    if (!isAdded) return@withContext
+
+                    if (centres.isEmpty()) {
+                        button.isEnabled = true
+                        Toast.makeText(requireContext(), "No donation centres are available yet", Toast.LENGTH_LONG).show()
+                    } else {
+                        showCentreChooser(centres, button)
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    if (!isAdded) return@withContext
+                    button.isEnabled = true
+                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun showCentreChooser(centres: List<DonationCentreItem>, button: Button) {
+        val labels = centres.map { c ->
+            if (c.address.isNullOrBlank()) c.name else "${c.name}\n${c.address}"
+        }.toTypedArray()
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Where will you hand in your donation?")
+            .setItems(labels) { _, which -> submitBatch(centres[which], button) }
+            .setNegativeButton("Cancel") { _, _ -> button.isEnabled = true }
+            .setOnCancelListener { button.isEnabled = true }
+            .show()
+    }
+
+    private fun submitBatch(centre: DonationCentreItem, button: Button) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val response = RetrofitClient.apiService.prepareDonationBatch(
-                    PrepareBatchRequest(selectedIds.toList())
+                    PrepareBatchRequest(selectedIds.toList(), centre._id)
                 )
                 withContext(Dispatchers.Main) {
+                    if (!isAdded) return@withContext
+
                     if (response.isSuccessful && response.body() != null) {
-                        Toast.makeText(requireContext(), "Donation prepared! Show the code to your NGO.", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            requireContext(),
+                            "Donation prepared for ${centre.name}. Show the code there.",
+                            Toast.LENGTH_LONG
+                        ).show()
                         // Reload the screen to show the active batch code view
                         view?.let { loadBasket(it) }
                     } else {
@@ -132,6 +181,7 @@ class DonateFragment : Fragment(R.layout.fragment_donate) {
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
+                    if (!isAdded) return@withContext
                     button.isEnabled = true
                     Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                 }

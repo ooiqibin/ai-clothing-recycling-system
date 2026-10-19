@@ -162,5 +162,14 @@
             android:textColor="@color/eco_white"
             android:textStyle="bold" />
 
+        <Button
+            android:id="@+id/btnMyCoupons"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:text="My Coupons"
+            android:textColor="@color/eco_white" />
+
     </LinearLayout>
 </ScrollView>

@@ -1,7 +1,9 @@
 package com.example.clothingrecycleapp
 
 import android.content.Context
+import android.graphics.Typeface
 import android.os.Bundle
+import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
@@ -17,6 +19,12 @@ import kotlinx.coroutines.withContext
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
 
+    // Shown when there are no published tips yet, or the server cannot be reached.
+    private val fallbackTips = listOf(
+        "💧 Wash in cold water to save energy.",
+        "🌬️ Air dry linen to preserve fibers."
+    )
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -24,6 +32,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         val tvTotalItems = view.findViewById<TextView>(R.id.tvTotalItems)
         val btnStartScan = view.findViewById<Button>(R.id.btnStartScan)
         val recentContainer = view.findViewById<LinearLayout>(R.id.recentContributionsContainer)
+        val ecoTipsContainer = view.findViewById<LinearLayout>(R.id.ecoTipsContainer)
 
         val prefs = requireContext().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         tvTotalPointsInline.text = "${prefs.getInt("rewardPoints", 0)} pts total"
@@ -32,8 +41,114 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             (activity as? MainActivity)?.openScanFragment()
         }
 
+        loadEcoTips(ecoTipsContainer)
         loadRecentItems(tvTotalPointsInline, tvTotalItems, recentContainer)
     }
+
+    // ---------------------------------------------------------------
+    // Eco tips
+    // ---------------------------------------------------------------
+
+    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
+
+    private fun cardParams(): LinearLayout.LayoutParams =
+        LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply { topMargin = dp(8) }
+
+    private fun loadEcoTips(container: LinearLayout) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = RetrofitClient.apiService.getEcoTips()
+                val tips = if (response.isSuccessful) response.body()?.tips.orEmpty() else emptyList()
+
+                withContext(Dispatchers.Main) {
+                    if (!isAdded) return@withContext
+
+                    if (tips.isNotEmpty()) showTips(container, tips.take(5))
+                    else showFallbackTips(container)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    if (isAdded) showFallbackTips(container)
+                }
+            }
+        }
+    }
+
+    private fun showFallbackTips(container: LinearLayout) {
+        container.removeAllViews()
+
+        fallbackTips.forEach { tipText ->
+            container.addView(TextView(requireContext()).apply {
+                text = tipText
+                textSize = 13f
+                setBackgroundResource(R.drawable.bg_card)
+                setPadding(dp(14), dp(14), dp(14), dp(14))
+                elevation = dp(1).toFloat()
+                layoutParams = cardParams()
+            })
+        }
+    }
+
+    private fun showTips(container: LinearLayout, tips: List<EcoTipItem>) {
+        container.removeAllViews()
+
+        tips.forEach { tip ->
+            val card = LinearLayout(requireContext()).apply {
+                orientation = LinearLayout.VERTICAL
+                setBackgroundResource(R.drawable.bg_card)
+                setPadding(dp(14), dp(14), dp(14), dp(14))
+                elevation = dp(1).toFloat()
+                layoutParams = cardParams()
+            }
+
+            card.addView(TextView(requireContext()).apply {
+                text = tip.category.uppercase()
+                textSize = 10f
+                setTypeface(null, Typeface.BOLD)
+                setTextColor(resources.getColor(R.color.eco_primary_green, null))
+            })
+
+            card.addView(TextView(requireContext()).apply {
+                text = tip.title
+                textSize = 14f
+                setTypeface(null, Typeface.BOLD)
+                setTextColor(resources.getColor(R.color.eco_text_dark, null))
+                setPadding(0, dp(2), 0, dp(4))
+            })
+
+            val body = TextView(requireContext()).apply {
+                text = tip.content
+                textSize = 13f
+                maxLines = COLLAPSED_LINES
+                ellipsize = TextUtils.TruncateAt.END
+                setTextColor(resources.getColor(R.color.eco_text_dark, null))
+            }
+            card.addView(body)
+
+            tip.author?.takeIf { it.isNotBlank() }?.let { author ->
+                card.addView(TextView(requireContext()).apply {
+                    text = "By $author"
+                    textSize = 11f
+                    setTextColor(resources.getColor(R.color.eco_text_gray, null))
+                    setPadding(0, dp(6), 0, 0)
+                })
+            }
+
+            // Tap a tip to read all of it; tap again to collapse.
+            card.setOnClickListener {
+                body.maxLines = if (body.maxLines == COLLAPSED_LINES) Int.MAX_VALUE else COLLAPSED_LINES
+            }
+
+            container.addView(card)
+        }
+    }
+
+    // ---------------------------------------------------------------
+    // Recent contributions
+    // ---------------------------------------------------------------
 
     private fun loadRecentItems(
         tvTotalPointsInline: TextView,
@@ -104,5 +219,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 // Fail silently on the home screen
             }
         }
+    }
+
+    private companion object {
+        const val COLLAPSED_LINES = 3
     }
 }

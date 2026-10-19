@@ -64,6 +64,7 @@
             android:elevation="2dp">
 
             <TextView
+                android:id="@+id/tvNameLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Full Name"
@@ -119,6 +120,123 @@
                 android:inputType="textPassword"
                 android:textSize="14sp"
                 android:layout_marginBottom="16dp" />
+
+            <CheckBox
+                android:id="@+id/cbRegisterAsNgo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="I'm registering an NGO / charity organisation"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="@color/eco_dark_green"
+                android:layout_marginBottom="12dp" />
+
+            <LinearLayout
+                android:id="@+id/ngoFieldsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Organisation Name"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/eco_text_dark"
+                    android:layout_marginBottom="6dp" />
+
+                <EditText
+                    android:id="@+id/etOrgName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_input"
+                    android:hint="Helping Hands Society"
+                    android:inputType="textCapWords"
+                    android:textSize="14sp"
+                    android:layout_marginBottom="16dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Registration Number"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/eco_text_dark"
+                    android:layout_marginBottom="6dp" />
+
+                <EditText
+                    android:id="@+id/etRegNumber"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_input"
+                    android:hint="e.g. ROS or SSM number"
+                    android:inputType="textCapCharacters"
+                    android:textSize="14sp"
+                    android:layout_marginBottom="16dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Organisation Phone"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/eco_text_dark"
+                    android:layout_marginBottom="6dp" />
+
+                <EditText
+                    android:id="@+id/etOrgPhone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_input"
+                    android:hint="04-123 4567"
+                    android:inputType="phone"
+                    android:textSize="14sp"
+                    android:layout_marginBottom="16dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Donation Drop-off Address"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/eco_text_dark"
+                    android:layout_marginBottom="6dp" />
+
+                <EditText
+                    android:id="@+id/etOrgAddress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_input"
+                    android:hint="Street, area, city"
+                    android:inputType="textPostalAddress|textMultiLine"
+                    android:minLines="2"
+                    android:gravity="top"
+                    android:textSize="14sp"
+                    android:layout_marginBottom="16dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="About Your Organisation (optional)"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/eco_text_dark"
+                    android:layout_marginBottom="6dp" />
+
+                <EditText
+                    android:id="@+id/etOrgAbout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_input"
+                    android:hint="What you do with donated clothes"
+                    android:inputType="textMultiLine|textCapSentences"
+                    android:minLines="2"
+                    android:gravity="top"
+                    android:textSize="14sp"
+                    android:layout_marginBottom="16dp" />
+            </LinearLayout>
 
             <CheckBox
                 android:id="@+id/cbAgree"

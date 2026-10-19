@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.journeyapps.barcodescanner.ScanContract
@@ -19,6 +20,8 @@ class VerifyFragment : Fragment(R.layout.fragment_verify) {
     private lateinit var etCode: EditText
     private lateinit var btnVerify: Button
     private lateinit var tvStatus: TextView
+    private lateinit var recentSection: LinearLayout
+    private lateinit var recentContainer: LinearLayout
 
     // Opens the camera, and gives back whatever the QR code contains.
     private val scanLauncher = registerForActivityResult(ScanContract()) { result ->
@@ -35,6 +38,8 @@ class VerifyFragment : Fragment(R.layout.fragment_verify) {
         etCode = view.findViewById(R.id.etVerificationCode)
         btnVerify = view.findViewById(R.id.btnVerify)
         tvStatus = view.findViewById(R.id.tvVerifyStatus)
+        recentSection = view.findViewById(R.id.recentSection)
+        recentContainer = view.findViewById(R.id.recentDonationsContainer)
 
         btnVerify.setOnClickListener {
             verify(etCode.text.toString().trim())
@@ -49,12 +54,69 @@ class VerifyFragment : Fragment(R.layout.fragment_verify) {
 
             scanLauncher.launch(options)
         }
+
+        loadRecent()
     }
 
     private fun showStatus(message: String, colorRes: Int) {
         tvStatus.setTextColor(resources.getColor(colorRes, null))
         tvStatus.text = message
     }
+
+    // ---------------------------------------------------------------
+    // Recent verifications at this centre
+    // ---------------------------------------------------------------
+
+    private fun loadRecent() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = RetrofitClient.apiService.getNgoOverview()
+                val body = if (response.isSuccessful) response.body() else null
+
+                withContext(Dispatchers.Main) {
+                    if (!isAdded) return@withContext
+
+                    if (body == null) {
+                        recentSection.visibility = View.GONE
+                    } else {
+                        showRecent(body.recent.take(5))
+                    }
+                }
+            } catch (e: Exception) {
+                // Leave the list hidden if it cannot be loaded.
+            }
+        }
+    }
+
+    private fun showRecent(items: List<NgoRecentDonation>) {
+        recentSection.visibility = View.VISIBLE
+        recentContainer.removeAllViews()
+
+        if (items.isEmpty()) {
+            recentContainer.addView(TextView(requireContext()).apply {
+                text = "No verified donations yet."
+                textSize = 13f
+                setTextColor(resources.getColor(R.color.eco_text_gray, null))
+            })
+            return
+        }
+
+        val pad = (8 * resources.displayMetrics.density).toInt()
+
+        items.forEach { donation ->
+            recentContainer.addView(TextView(requireContext()).apply {
+                text = "${donation.donorName} • ${donation.itemCount} item(s) • +${donation.points} pts\n" +
+                        (donation.verifiedAt?.take(10) ?: "")
+                textSize = 13f
+                setTextColor(resources.getColor(R.color.eco_text_dark, null))
+                setPadding(0, pad, 0, pad)
+            })
+        }
+    }
+
+    // ---------------------------------------------------------------
+    // Verifying a code (unchanged)
+    // ---------------------------------------------------------------
 
     private fun verify(code: String) {
         if (code.length != 6 || !code.all { it.isDigit() }) {
@@ -83,6 +145,7 @@ class VerifyFragment : Fragment(R.layout.fragment_verify) {
                             R.color.eco_dark_green
                         )
                         etCode.text.clear()
+                        loadRecent() // update the recent list
                     } else {
                         showStatus(errorText ?: "Verification failed", android.R.color.holo_red_dark)
                     }

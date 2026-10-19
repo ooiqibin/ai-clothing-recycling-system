@@ -5,18 +5,19 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.Locale
 
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
-    // Rough estimate: assume ~3kg CO2 saved per reusable/recyclable item processed.
-    // This is a simple placeholder metric for the prototype, not a scientifically validated figure.
-    private val CO2_PER_ITEM_KG = 3.0
+    // Same estimate as the admin dashboard: about 0.4 kg per item,
+    // 3.169 kg CO2e avoided per kg of clothing reused (European Commission figure).
+    // This is an estimate, not a measured value.
+    private val CO2_PER_ITEM_KG = 0.4 * 3.169
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -29,16 +30,39 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         val tvBreakdown = view.findViewById<TextView>(R.id.tvBreakdown)
         val btnViewHistory = view.findViewById<Button>(R.id.btnViewHistory)
         val btnRedeemRewards = view.findViewById<Button>(R.id.btnRedeemRewards)
+        val btnMyCoupons = view.findViewById<Button>(R.id.btnMyCoupons)
 
         btnViewHistory.setOnClickListener {
             startActivity(Intent(requireContext(), HistoryActivity::class.java))
         }
 
         btnRedeemRewards.setOnClickListener {
-            Toast.makeText(requireContext(), "Rewards catalog coming soon!", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(requireContext(), RewardsActivity::class.java))
+        }
+
+        btnMyCoupons.setOnClickListener {
+            startActivity(
+                Intent(requireContext(), RewardsActivity::class.java)
+                    .putExtra(RewardsActivity.EXTRA_TAB, RewardsActivity.TAB_COUPONS)
+            )
         }
 
         loadProfileData(tvProfileName, tvProfileEmail, tvProfilePoints, tvProfileTotalItems, tvProfileCarbonOffset, tvBreakdown)
+    }
+
+    // Points change when coupons are redeemed, so refresh when coming back.
+    override fun onResume() {
+        super.onResume()
+        view?.let {
+            loadProfileData(
+                it.findViewById(R.id.tvProfileName),
+                it.findViewById(R.id.tvProfileEmail),
+                it.findViewById(R.id.tvProfilePoints),
+                it.findViewById(R.id.tvProfileTotalItems),
+                it.findViewById(R.id.tvProfileCarbonOffset),
+                it.findViewById(R.id.tvBreakdown)
+            )
+        }
     }
 
     private fun loadProfileData(
@@ -55,6 +79,8 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                 val historyResponse = RetrofitClient.apiService.getHistory()
 
                 withContext(Dispatchers.Main) {
+                    if (!isAdded) return@withContext
+
                     if (meResponse.isSuccessful && meResponse.body() != null) {
                         val user = meResponse.body()!!.user
                         tvProfileName.text = user.name
@@ -66,8 +92,10 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                         val items = historyResponse.body()!!.history
                         tvProfileTotalItems.text = items.size.toString()
 
-                        val carbonOffset = items.size * CO2_PER_ITEM_KG
-                        tvProfileCarbonOffset.text = "${carbonOffset.toInt()} kg"
+                        // Only donations that an NGO verified count towards the offset.
+                        val donatedCount = items.count { it.status == "donated" }
+                        val carbonOffset = donatedCount * CO2_PER_ITEM_KG
+                        tvProfileCarbonOffset.text = String.format(Locale.US, "%.1f kg", carbonOffset)
 
                         val reusableCount = items.count { it.category == "reusable" }
                         val recyclableCount = items.count { it.category == "recyclable" }

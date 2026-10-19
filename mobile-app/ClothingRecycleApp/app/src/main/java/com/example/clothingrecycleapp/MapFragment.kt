@@ -41,8 +41,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
         private const val TAG = "MapFragment"
 
         // Free key from https://carto.com/basemaps/apikey
-        // Do not commit your real key to a public GitHub repo.
-        private const val CARTO_API_KEY = "cb1_4gey_1_19cc0978b577fe5f1042c005"
+        private val CARTO_API_KEY: String = BuildConfig.CARTO_API_KEY
 
         private const val API_BASE_URL = "http://10.0.2.2:5000"
         private const val ADMIN_ENDPOINT = "/api/donation-centers"
