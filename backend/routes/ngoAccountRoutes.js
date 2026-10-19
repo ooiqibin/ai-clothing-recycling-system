@@ -3,12 +3,14 @@ const router = express.Router();
 const {
   listNgoAccounts,
   createNgoAccount,
+  updateNgoAccount,
   deleteNgoAccount,
 } = require('../controllers/ngoAccountController');
 const { protect, restrictTo } = require('../middleware/authMiddleware');
 
 router.get('/admin/ngo-accounts', protect, restrictTo('admin'), listNgoAccounts);
 router.post('/admin/ngo-accounts', protect, restrictTo('admin'), createNgoAccount);
+router.put('/admin/ngo-accounts/:id', protect, restrictTo('admin'), updateNgoAccount);
 router.delete('/admin/ngo-accounts/:id', protect, restrictTo('admin'), deleteNgoAccount);
 
 module.exports = router;

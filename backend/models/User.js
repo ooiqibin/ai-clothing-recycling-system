@@ -22,12 +22,31 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'admin', 'ngo'],
+    enum: ['user', 'admin', 'ngo', 'ngo_pending'],
     default: 'user',
   },
   createdAt: {
     type: Date,
     default: Date.now,
+  },
+    // For NGO staff: the donation centre their account belongs to.
+  centerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'DonationCenter',
+    default: null,
+  },
+    // Admins can suspend an account; a suspended user cannot log in or use the app.
+  suspended: {
+    type: Boolean,
+    default: false,
+  },
+  suspendedReason: {
+    type: String,
+    default: '',
+  },
+  suspendedAt: {
+    type: Date,
+    default: null,
   },
 });
 

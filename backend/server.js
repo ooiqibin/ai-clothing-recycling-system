@@ -15,6 +15,14 @@ const donationRoutes = require('./routes/donationRoutes');
 const placesRoutes = require('./routes/placesRoutes');
 const donationCenterRoutes = require('./routes/donationCenterRoutes');
 const ngoAccountRoutes = require('./routes/ngoAccountRoutes');
+const statsRoutes = require('./routes/statsRoutes');
+const ngoApplicationRoutes = require('./routes/ngoApplicationRoutes');
+const ngoRoutes = require('./routes/ngoRoutes');
+const adminDonationRoutes = require('./routes/adminDonationRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes');
+const userManagementRoutes = require('./routes/userManagementRoutes');
+const ecoTipRoutes = require('./routes/ecoTipRoutes');
+const rewardRoutes = require('./routes/rewardRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -43,6 +51,14 @@ app.use('/api', actionRoutes);
 app.use('/api', donationRoutes);
 app.use('/api', donationCenterRoutes);
 app.use('/api', ngoAccountRoutes);
+app.use('/api', statsRoutes);
+app.use('/api', ngoApplicationRoutes);
+app.use('/api', ngoRoutes);
+app.use('/api', adminDonationRoutes);
+app.use('/api', analyticsRoutes);
+app.use('/api', userManagementRoutes);
+app.use('/api', ecoTipRoutes);
+app.use('/api', rewardRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

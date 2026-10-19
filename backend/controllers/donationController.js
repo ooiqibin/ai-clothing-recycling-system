@@ -1,6 +1,8 @@
 const ClassificationResult = require('../models/ClassificationResult');
 const DonationBatch = require('../models/DonationBatch');
 const User = require('../models/User');
+const mongoose = require('mongoose');
+const DonationCenter = require('../models/DonationCenter');
 
 // GET /api/donation-basket
 // Returns the user's un-batched reusable items, plus their currently active
@@ -22,13 +24,16 @@ const getDonationBasket = async (req, res) => {
     const activeBatch = await DonationBatch.findOne({
       userId: req.userId,
       status: 'awaiting_verification',
-    }).populate('itemIds');
+      }).populate('itemIds').populate('centerId', 'name address');
 
     let activeBatchData = null;
     if (activeBatch) {
       activeBatchData = {
         verificationCode: activeBatch.verificationCode,
         totalPoints: activeBatch.totalPoints,
+        centre: activeBatch.centerId && activeBatch.centerId.name
+          ? { name: activeBatch.centerId.name, address: activeBatch.centerId.address || '' }
+          : null,
         items: activeBatch.itemIds.map((item) => ({
           ...item.toObject(),
           imageUrl: `/uploads/${item.imageFilename}`,
@@ -45,12 +50,23 @@ const getDonationBasket = async (req, res) => {
 
 // POST /api/donation-basket/prepare
 // body: { itemIds: [...] }
+// POST /api/donation-basket/prepare
+// body: { itemIds: [...], centerId }
 const prepareDonationBatch = async (req, res) => {
   try {
-    const { itemIds } = req.body;
+    const { itemIds, centerId } = req.body;
 
     if (!Array.isArray(itemIds) || itemIds.length === 0) {
       return res.status(400).json({ error: 'Select at least one item to donate' });
+    }
+
+    if (!mongoose.isValidObjectId(centerId)) {
+      return res.status(400).json({ error: 'Please choose a donation centre' });
+    }
+
+    const centre = await DonationCenter.findOne({ _id: centerId, isActive: true }).select('name');
+    if (!centre) {
+      return res.status(400).json({ error: 'That donation centre is not available' });
     }
 
     // Block starting a new batch while one is already awaiting verification
@@ -75,13 +91,19 @@ const prepareDonationBatch = async (req, res) => {
     }
 
     const totalPoints = items.reduce((sum, item) => sum + item.potentialPoints, 0);
-    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Pick a 6-digit code that no other waiting donation is using.
+    let verificationCode;
+    do {
+      verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    } while (await DonationBatch.exists({ verificationCode, status: 'awaiting_verification' }));
 
     const batch = await DonationBatch.create({
       userId: req.userId,
       itemIds: items.map((i) => i._id),
       verificationCode,
       totalPoints,
+      centerId: centre._id,
     });
 
     await ClassificationResult.updateMany(
@@ -89,7 +111,12 @@ const prepareDonationBatch = async (req, res) => {
       { $set: { batchId: batch._id, status: 'awaiting_verification' } }
     );
 
-    res.json({ verificationCode, totalPoints, itemCount: items.length });
+    res.json({
+      verificationCode,
+      totalPoints,
+      itemCount: items.length,
+      centreName: centre.name,
+    });
 
   } catch (error) {
     console.error('Error preparing donation batch:', error.message);
@@ -97,28 +124,67 @@ const prepareDonationBatch = async (req, res) => {
   }
 };
 
-// POST /api/verify (NGO side)
-// body: { verificationCode }
+// POST /api/verify (NGO staff and admins only)
+// body: { verificationCode, centerId? }   centerId is only used when an admin verifies
+// POST /api/verify (NGO staff and admins only)
+// body: { verificationCode, centerId? }   centerId is only used by an admin, for a donation with no centre yet
 const verifyDonationBatch = async (req, res) => {
   try {
-    const { verificationCode } = req.body;
+    const verificationCode = String(req.body.verificationCode || '').trim();
 
     if (!verificationCode) {
       return res.status(400).json({ error: 'Verification code is required' });
     }
 
-    const batch = await DonationBatch.findOne({
+    const waiting = await DonationBatch.findOne({
       verificationCode,
       status: 'awaiting_verification',
-    });
+    }).select('centerId');
+
+    if (!waiting) {
+      return res.status(404).json({ error: 'Invalid or already-used verification code' });
+    }
+
+    // The centre the donor chose (older donations may not have one).
+    let centerId = waiting.centerId || null;
+
+    if (req.userRole === 'ngo') {
+      if (!req.userCenterId) {
+        return res.status(403).json({
+          error: 'Your NGO account is not linked to a donation centre yet. Ask an admin to link it.',
+        });
+      }
+      if (centerId && String(centerId) !== String(req.userCenterId)) {
+        return res.status(403).json({
+          error: 'This donation was made to a different donation centre.',
+        });
+      }
+      centerId = req.userCenterId;
+    } else if (!centerId && req.body.centerId) {
+      if (!mongoose.isValidObjectId(req.body.centerId)) {
+        return res.status(400).json({ error: 'Invalid donation centre' });
+      }
+      centerId = req.body.centerId;
+    }
+
+    // Only one request can switch awaiting_verification -> verified,
+    // so points can never be given twice for the same code.
+    const batch = await DonationBatch.findOneAndUpdate(
+      { _id: waiting._id, status: 'awaiting_verification' },
+      {
+        $set: {
+          status: 'verified',
+          verifiedAt: new Date(),
+          verifiedBy: req.userId,
+          centerId,
+        },
+      },
+      { new: true }
+    );
 
     if (!batch) {
       return res.status(404).json({ error: 'Invalid or already-used verification code' });
     }
-
-    batch.status = 'verified';
-    batch.verifiedAt = new Date();
-    await batch.save();
 
     await ClassificationResult.updateMany(
       { _id: { $in: batch.itemIds } },
@@ -141,7 +207,7 @@ const verifyDonationBatch = async (req, res) => {
     res.json({
       itemCount: batch.itemIds.length,
       pointsAwarded: batch.totalPoints,
-      donorName: donor.name,
+      donorName: donor ? donor.name : 'the donor',
     });
 
   } catch (error) {

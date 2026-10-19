@@ -11,6 +11,7 @@ const donationCenterSchema = new mongoose.Schema(
     notes: { type: String, trim: true, default: '' },
     isActive: { type: Boolean, default: true },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    region: { type: String, trim: true, default: '' },
   },
   { timestamps: true }
 );

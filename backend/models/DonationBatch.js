@@ -30,6 +30,16 @@ const donationBatchSchema = new mongoose.Schema({
   verifiedAt: {
     type: Date,
   },
+  // Who verified it, and which donation centre it was handed in at.
+  verifiedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  },
+  centerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'DonationCenter',
+    default: null,
+  },
 });
 
 module.exports = mongoose.model('DonationBatch', donationBatchSchema);

@@ -18,14 +18,21 @@ const protect = async (req, res, next) => {
   }
 
   try {
-    const user = await User.findById(decoded.userId).select('_id role');
+    const user = await User.findById(decoded.userId).select('_id role centerId suspended');
 
     if (!user) {
       return res.status(401).json({ error: 'Not authorized, user no longer exists' });
     }
 
+    if (user.suspended) {
+      return res.status(403).json({
+        error: 'Your account has been suspended. Please contact support.',
+      });
+    }
+
     req.userId = decoded.userId;
     req.userRole = user.role || 'user';
+    req.userCenterId = user.centerId || null;
     next();
   } catch (error) {
     console.error('Auth lookup error:', error.message);
