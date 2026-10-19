@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api } from './api'
 
-const EMPTY_FORM = { name: '', email: '', password: '' }
+const EMPTY_FORM = { name: '', email: '', password: '', centerId: '' }
 
 export default function NgoAccounts({ onLogout }) {
   const [accounts, setAccounts] = useState([])
+  const [centres, setCentres] = useState([])
   const [loading, setLoading] = useState(true)
   const [listError, setListError] = useState('')
 
@@ -23,13 +24,17 @@ export default function NgoAccounts({ onLogout }) {
     [onLogout]
   )
 
-  const loadAccounts = useCallback(async () => {
+  const loadAll = useCallback(async () => {
     setLoading(true)
     setListError('')
 
     try {
-      const data = await api('/api/admin/ngo-accounts')
-      setAccounts(data.accounts)
+      const [accountData, centreData] = await Promise.all([
+        api('/api/admin/ngo-accounts'),
+        api('/api/admin/donation-centers'),
+      ])
+      setAccounts(accountData.accounts)
+      setCentres(centreData.centers)
     } catch (err) {
       if (!handleAuthError(err)) setListError(err.message)
     } finally {
@@ -38,8 +43,8 @@ export default function NgoAccounts({ onLogout }) {
   }, [handleAuthError])
 
   useEffect(() => {
-    loadAccounts()
-  }, [loadAccounts])
+    loadAll()
+  }, [loadAll])
 
   function update(field, value) {
     setForm((current) => ({ ...current, [field]: value }))
@@ -53,11 +58,7 @@ export default function NgoAccounts({ onLogout }) {
     try {
       const data = await api('/api/admin/ngo-accounts', {
         method: 'POST',
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          password: form.password,
-        }),
+        body: JSON.stringify(form),
       })
 
       setMessage({
@@ -65,11 +66,26 @@ export default function NgoAccounts({ onLogout }) {
         text: `Created. ${data.account.name} can now log in to the app with ${data.account.email}.`,
       })
       setForm(EMPTY_FORM)
-      await loadAccounts()
+      await loadAll()
     } catch (err) {
       if (!handleAuthError(err)) setMessage({ ok: false, text: err.message })
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function handleChangeCentre(account, centerId) {
+    if (!centerId) return
+    setListError('')
+
+    try {
+      await api(`/api/admin/ngo-accounts/${account._id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ centerId }),
+      })
+      await loadAll()
+    } catch (err) {
+      if (!handleAuthError(err)) setListError(err.message)
     }
   }
 
@@ -81,7 +97,7 @@ export default function NgoAccounts({ onLogout }) {
 
     try {
       await api(`/api/admin/ngo-accounts/${account._id}`, { method: 'DELETE' })
-      await loadAccounts()
+      await loadAll()
     } catch (err) {
       if (!handleAuthError(err)) setListError(err.message)
     }
@@ -101,11 +117,11 @@ export default function NgoAccounts({ onLogout }) {
             Create an NGO account
           </h1>
           <p className="text-sm text-gray-600">
-            NGO staff log in to the mobile app with these details and use the
-            Verify tab to confirm donations.
+            NGO staff log in to the mobile app with these details. They can only
+            verify and see donations for the donation centre you link here.
           </p>
 
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Organisation / staff name
@@ -142,6 +158,29 @@ export default function NgoAccounts({ onLogout }) {
                 onChange={(e) => update('password', e.target.value)}
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Donation centre
+              </label>
+              <select
+                className={inputClass}
+                required
+                value={form.centerId}
+                onChange={(e) => update('centerId', e.target.value)}
+              >
+                <option value="">Choose a centre...</option>
+                {centres.map((c) => (
+                  <option key={c._id} value={c._id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              {centres.length === 0 && !loading && (
+                <p className="text-xs text-amber-700 mt-1">
+                  Add a donation centre first (Donation Centres tab).
+                </p>
+              )}
+            </div>
           </div>
 
           {message && (
@@ -168,7 +207,7 @@ export default function NgoAccounts({ onLogout }) {
             <h2 className="text-lg font-bold text-gray-800">NGO accounts</h2>
             <button
               type="button"
-              onClick={loadAccounts}
+              onClick={loadAll}
               className="text-sm bg-white border hover:bg-gray-50 rounded-lg px-3 py-1.5"
             >
               Refresh
@@ -183,7 +222,7 @@ export default function NgoAccounts({ onLogout }) {
                 <tr>
                   <th className="px-4 py-3">Name</th>
                   <th className="px-4 py-3">Email</th>
-                  <th className="px-4 py-3">Created</th>
+                  <th className="px-4 py-3">Donation centre</th>
                   <th className="px-4 py-3 text-right">Actions</th>
                 </tr>
               </thead>
@@ -193,7 +232,20 @@ export default function NgoAccounts({ onLogout }) {
                     <td className="px-4 py-3 font-medium">{a.name}</td>
                     <td className="px-4 py-3">{a.email}</td>
                     <td className="px-4 py-3">
-                      {new Date(a.createdAt).toLocaleDateString()}
+                      <select
+                        className={`border rounded-lg px-2 py-1 ${
+                          a.centre ? '' : 'border-amber-500 text-amber-700'
+                        }`}
+                        value={a.centre ? a.centre.id : ''}
+                        onChange={(e) => handleChangeCentre(a, e.target.value)}
+                      >
+                        {!a.centre && <option value="">Not linked yet</option>}
+                        {centres.map((c) => (
+                          <option key={c._id} value={c._id}>
+                            {c.name}
+                          </option>
+                        ))}
+                      </select>
                     </td>
                     <td className="px-4 py-3 text-right">
                       <button
