@@ -1,6 +1,8 @@
 require('dotenv').config();
-const dns = require('dns');
-dns.setServers(['8.8.8.8', '1.1.1.1']); // bypass local DNS that blocks Atlas SRV lookups
+// Only needed on networks that block MongoDB Atlas lookups (your home Wi-Fi). Not needed on Render.
+if (process.env.USE_PUBLIC_DNS === 'true') {
+  require('dns').setServers(['8.8.8.8', '1.1.1.1']);
+}
 
 const express = require('express');
 const cors = require('cors');

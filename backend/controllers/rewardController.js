@@ -9,6 +9,23 @@ const CODE_LENGTH = 8;
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const PAGE_SIZE = 20;
 const DAY_MS = 24 * 60 * 60 * 1000;
+const MY_OFFSET_MS = 8 * 60 * 60 * 1000; // Malaysia is UTC+8 all year
+
+// A coupon is valid through the END of its last day (11:59 PM Malaysian time).
+function endOfDayMalaysia(timeMs) {
+  const local = new Date(timeMs + MY_OFFSET_MS);
+  local.setUTCHours(23, 59, 59, 999);
+  return new Date(local.getTime() - MY_OFFSET_MS);
+}
+
+function unusableReason(coupon) {
+  if (!coupon) return 'Coupon not found';
+  if (coupon.status === 'used') return 'This coupon was already used';
+  if (coupon.status === 'cancelled') return 'This coupon was cancelled';
+  if (new Date(coupon.expiresAt) <= new Date()) return 'This coupon has expired';
+  return 'This coupon cannot be used';
+}
+
 const COUPON_STATUSES = ['active', 'used', 'expired', 'cancelled'];
 
 function makeCode() {
@@ -233,7 +250,7 @@ const redeemReward = async (req, res) => {
             terms: reward.terms || '',
             pointsSpent: reward.pointsCost,
             code: makeCode(),
-            expiresAt: new Date(Date.now() + reward.validDays * DAY_MS),
+            expiresAt: endOfDayMalaysia(Date.now() + reward.validDays * DAY_MS),
           });
         } catch (error) {
           if (error.code !== 11000) throw error; // 11000 = code already used, try another
@@ -458,9 +475,8 @@ const adminUseCoupon = async (req, res) => {
       .lean();
 
     if (!coupon) {
-      return res
-        .status(400)
-        .json({ error: 'This coupon cannot be marked used (already used, expired or cancelled)' });
+      const existing = await Coupon.findById(req.params.id).lean();
+      return res.status(400).json({ error: unusableReason(existing) });
     }
 
     res.json({ coupon: couponShape(coupon) });
