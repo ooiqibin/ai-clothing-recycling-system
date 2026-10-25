@@ -13,6 +13,7 @@ EPOCHS = 20
 MODEL_SAVE_PATH = "model/clothing_classifier.keras"
 
 os.makedirs("model", exist_ok=True)
+tf.keras.utils.set_random_seed(42)
 
 # ----- LOAD DATASET -----
 # Automatically splits into train/validation, and reads class names from folder names
@@ -112,3 +113,54 @@ final_train_acc = history.history["accuracy"][-1]
 final_val_acc = history.history["val_accuracy"][-1]
 print(f"\nFinal training accuracy: {final_train_acc:.2%}")
 print(f"Final validation accuracy: {final_val_acc:.2%}")
+
+# ----- SAVE TRAINING HISTORY, PLOT CURVES, CONFUSION MATRIX -----
+import json
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix, classification_report, ConfusionMatrixDisplay
+
+# Keep the numbers, so the plots can be redrawn without retraining.
+with open("model/training_history.json", "w") as f:
+    json.dump({k: [float(v) for v in vals] for k, vals in history.history.items()}, f)
+
+acc = history.history["accuracy"]
+val_acc = history.history["val_accuracy"]
+loss = history.history["loss"]
+val_loss = history.history["val_loss"]
+epochs_range = range(1, len(acc) + 1)
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
+
+ax1.plot(epochs_range, acc, label="Training accuracy")
+ax1.plot(epochs_range, val_acc, label="Validation accuracy")
+ax1.set_title("Model accuracy")
+ax1.set_xlabel("Epoch")
+ax1.set_ylabel("Accuracy")
+ax1.legend()
+
+ax2.plot(epochs_range, loss, label="Training loss")
+ax2.plot(epochs_range, val_loss, label="Validation loss")
+ax2.set_title("Model loss")
+ax2.set_xlabel("Epoch")
+ax2.set_ylabel("Loss")
+ax2.legend()
+
+plt.tight_layout()
+plt.savefig("model/training_curves.png", dpi=200, bbox_inches="tight")
+plt.close(fig)
+
+# Confusion matrix. Labels and predictions are collected in the SAME loop,
+# because the dataset order can change between passes.
+y_true, y_pred = [], []
+for images, labels in val_ds:
+    probs = model.predict(images, verbose=0)
+    y_true.extend(labels.numpy())
+    y_pred.extend(np.argmax(probs, axis=1))
+
+print("\n" + classification_report(y_true, y_pred, target_names=class_names))
+
+ConfusionMatrixDisplay(
+    confusion_matrix(y_true, y_pred), display_labels=class_names
+).plot(cmap="Greens")
+plt.savefig("model/confusion_matrix.png", dpi=200, bbox_inches="tight")
+plt.show()
