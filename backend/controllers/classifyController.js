@@ -4,7 +4,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 const ClassificationResult = require('../models/ClassificationResult');
 
-const AI_SERVICE_URL = 'http://localhost:6000/predict';
+const AI_SERVICE_URL ='https://ai-clothing-recycling-system-1.onrender.com/predict';
 
 const POTENTIAL_POINTS_MAP = {
   reusable: 10,
