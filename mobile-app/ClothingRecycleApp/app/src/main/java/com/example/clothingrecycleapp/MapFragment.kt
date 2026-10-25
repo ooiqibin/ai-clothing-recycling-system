@@ -43,7 +43,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
         // Free key from https://carto.com/basemaps/apikey
         private val CARTO_API_KEY: String = BuildConfig.CARTO_API_KEY
 
-        private const val API_BASE_URL = "http://10.0.2.2:5000"
+        private val API_BASE_URL: String = BuildConfig.SERVER_URL.trimEnd('/')
         private const val ADMIN_ENDPOINT = "/api/donation-centers"
 
         // How far to look for places (the backend allows up to 10000).

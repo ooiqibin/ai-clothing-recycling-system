@@ -1,5 +1,5 @@
 package com.example.clothingrecycleapp
 
 object Constants {
-    const val SERVER_BASE_URL = "http://10.0.2.2:5000"
+    val SERVER_BASE_URL: String = BuildConfig.SERVER_URL.trimEnd('/')
 }

@@ -21,6 +21,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 
 class RewardsActivity : AppCompatActivity() {
 
@@ -119,6 +122,40 @@ class RewardsActivity : AppCompatActivity() {
         } catch (e: Exception) {
             "Something went wrong"
         }
+    }
+
+    // Server dates are in UTC. Show them in the phone's local time.
+    private fun formatLocal(iso: String?): String {
+        if (iso.isNullOrBlank()) return "-"
+
+        return try {
+            val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).apply {
+                timeZone = TimeZone.getTimeZone("UTC")
+            }
+            val date = parser.parse(iso.take(19)) ?: return iso.take(10)
+            SimpleDateFormat("d MMM yyyy, h:mm a", Locale.getDefault()).format(date)
+        } catch (e: Exception) {
+            iso.take(10)
+        }
+    }
+
+    private fun showRedeemedDialog(coupon: CouponItem, pointsLeft: Int) {
+        val partner = coupon.partnerName?.takeIf { it.isNotBlank() }?.let { "\n$it" } ?: ""
+
+        AlertDialog.Builder(this)
+            .setTitle("Reward redeemed! 🎉")
+            .setMessage(
+                "${coupon.rewardTitle}$partner\n\n" +
+                        "Coupon code: ${coupon.code}\n" +
+                        "Valid until: ${formatLocal(coupon.expiresAt)}\n\n" +
+                        "$pointsLeft points left."
+            )
+            .setCancelable(false)
+            .setPositiveButton("View my coupon") { _, _ -> selectTab(TAB_COUPONS) }
+            .setNegativeButton("Close") { _, _ ->
+                if (showing == TAB_CATALOG) loadCatalog() // refresh stock and buttons
+            }
+            .show()
     }
 
     private fun selectTab(tab: String) {
@@ -246,8 +283,7 @@ class RewardsActivity : AppCompatActivity() {
                     val body = response.body()
                     if (response.isSuccessful && body != null) {
                         updatePoints(body.totalRewardPoints)
-                        Toast.makeText(this@RewardsActivity, "Coupon ready! Find it in My coupons.", Toast.LENGTH_LONG).show()
-                        selectTab(TAB_COUPONS)
+                        showRedeemedDialog(body.coupon, body.totalRewardPoints)
                     } else {
                         Toast.makeText(this@RewardsActivity, errorText ?: "Could not redeem", Toast.LENGTH_LONG).show()
                         // Stock or points may have changed, so refresh the list.
@@ -339,9 +375,9 @@ class RewardsActivity : AppCompatActivity() {
             }
 
             val dateLine = when (coupon.status) {
-                "active" -> "Valid until ${coupon.expiresAt?.take(10) ?: "-"}"
-                "used" -> "Used on ${coupon.usedAt?.take(10) ?: "-"}"
-                "expired" -> "Expired on ${coupon.expiresAt?.take(10) ?: "-"}"
+                "active" -> "Valid until ${formatLocal(coupon.expiresAt)}"
+                "used" -> "Used on ${formatLocal(coupon.usedAt)}"
+                "expired" -> "Expired on ${formatLocal(coupon.expiresAt)}"
                 else -> "Cancelled. Your points were returned."
             }
             card.addView(label(dateLine, 12f, getColor(R.color.eco_text_gray)).apply {

@@ -28,6 +28,11 @@ android {
             "CARTO_API_KEY",
             "\"${localProps.getProperty("CARTO_API_KEY", "")}\""
         )
+        buildConfigField(
+            "String",
+            "SERVER_URL",
+            "\"${localProps.getProperty("SERVER_URL", "http://10.0.2.2:5000")}\""
+        )
     }
 
     buildTypes {
