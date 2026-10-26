@@ -194,15 +194,15 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                                 when (item.status) {
                                     "pending" -> {
                                         tvStatus.text = "Tap to complete"
-                                        tvPointsRow.text = "+${item.potentialPoints} pts"
+                                        tvPointsRow.text = if (item.category == "reusable") "+${item.potentialPoints} pts" else ""
                                     }
                                     "awaiting_verification" -> {
                                         tvStatus.text = "Awaiting NGO"
                                         tvPointsRow.text = "+${item.potentialPoints} pts"
                                     }
                                     else -> {
-                                        tvStatus.text = item.status.replaceFirstChar { it.uppercase() }
-                                        tvPointsRow.text = "+${item.pointsAwarded} pts"
+                                        tvStatus.text = item.status.replace('_', ' ').replaceFirstChar { it.uppercase() }
+                                        tvPointsRow.text = if (item.pointsAwarded > 0) "+${item.pointsAwarded} pts" else ""
                                     }
                                 }
 

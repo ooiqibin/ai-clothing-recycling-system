@@ -15,7 +15,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="💡 Share an Eco Tip"
+            android:text="Share an Eco Tip"
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@color/eco_dark_green"
@@ -45,6 +45,8 @@
             android:background="@drawable/bg_input"
             android:hint="e.g. Donate clothes in good condition"
             android:inputType="textCapSentences"
+            android:textColor="@color/eco_text_dark"
+            android:textColorHint="@color/eco_text_gray"
             android:maxLength="120"
             android:textSize="14sp"
             android:layout_marginBottom="16dp" />
@@ -81,6 +83,8 @@
             android:background="@drawable/bg_input"
             android:hint="Explain the tip in a few sentences"
             android:inputType="textMultiLine|textCapSentences"
+            android:textColor="@color/eco_text_dark"
+            android:textColorHint="@color/eco_text_gray"
             android:minLines="4"
             android:gravity="top"
             android:maxLength="2000"

@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const API_URL = import.meta.env.VITE_API_URL || 'https://ai-clothing-recycling-system.onrender.com'
 
 const TOKEN_KEY = 'admin_token'
 const USER_KEY = 'admin_user'

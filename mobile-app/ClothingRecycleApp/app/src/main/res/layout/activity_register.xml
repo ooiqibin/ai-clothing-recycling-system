@@ -11,7 +11,6 @@
         android:orientation="vertical"
         android:padding="28dp">
 
-        <!-- Top bar: logo + Help -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -49,11 +48,10 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
             android:gravity="center_horizontal"
-            android:text="Start your journey toward a zero-waste lifestyle and join the circular economy today."
+            android:text="Use a real email address. We will send you a code to verify it."
             android:textSize="13sp"
             android:textColor="@color/eco_text_gray" />
 
-        <!-- Card -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -75,12 +73,11 @@
 
             <EditText
                 android:id="@+id/etName"
+                style="@style/Widget.App.Input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_input"
-                android:hint="Alex Rivers"
-                android:inputType="textPersonName"
-                android:textSize="14sp"
+                android:hint="Your full name"
+                android:inputType="textPersonName|textCapWords"
                 android:layout_marginBottom="16dp" />
 
             <TextView
@@ -94,12 +91,11 @@
 
             <EditText
                 android:id="@+id/etEmail"
+                style="@style/Widget.App.Input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_input"
-                android:hint="alex@example.com"
+                android:hint="Your real email address"
                 android:inputType="textEmailAddress"
-                android:textSize="14sp"
                 android:layout_marginBottom="16dp" />
 
             <TextView
@@ -113,12 +109,11 @@
 
             <EditText
                 android:id="@+id/etPassword"
+                style="@style/Widget.App.Input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_input"
-                android:hint="••••••••"
+                android:hint="At least 6 characters"
                 android:inputType="textPassword"
-                android:textSize="14sp"
                 android:layout_marginBottom="16dp" />
 
             <CheckBox
@@ -149,12 +144,11 @@
 
                 <EditText
                     android:id="@+id/etOrgName"
+                    style="@style/Widget.App.Input"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_input"
                     android:hint="Helping Hands Society"
                     android:inputType="textCapWords"
-                    android:textSize="14sp"
                     android:layout_marginBottom="16dp" />
 
                 <TextView
@@ -168,12 +162,11 @@
 
                 <EditText
                     android:id="@+id/etRegNumber"
+                    style="@style/Widget.App.Input"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_input"
                     android:hint="e.g. ROS or SSM number"
                     android:inputType="textCapCharacters"
-                    android:textSize="14sp"
                     android:layout_marginBottom="16dp" />
 
                 <TextView
@@ -187,12 +180,11 @@
 
                 <EditText
                     android:id="@+id/etOrgPhone"
+                    style="@style/Widget.App.Input"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_input"
                     android:hint="04-123 4567"
                     android:inputType="phone"
-                    android:textSize="14sp"
                     android:layout_marginBottom="16dp" />
 
                 <TextView
@@ -206,14 +198,13 @@
 
                 <EditText
                     android:id="@+id/etOrgAddress"
+                    style="@style/Widget.App.Input"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_input"
                     android:hint="Street, area, city"
                     android:inputType="textPostalAddress|textMultiLine"
                     android:minLines="2"
                     android:gravity="top"
-                    android:textSize="14sp"
                     android:layout_marginBottom="16dp" />
 
                 <TextView
@@ -227,14 +218,13 @@
 
                 <EditText
                     android:id="@+id/etOrgAbout"
+                    style="@style/Widget.App.Input"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_input"
                     android:hint="What you do with donated clothes"
                     android:inputType="textMultiLine|textCapSentences"
                     android:minLines="2"
                     android:gravity="top"
-                    android:textSize="14sp"
                     android:layout_marginBottom="16dp" />
             </LinearLayout>
 
@@ -266,8 +256,9 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="20dp"
+            android:padding="8dp"
             android:text="Already have an account? Log In"
-            android:textSize="13sp"
+            android:textSize="14sp"
             android:textColor="@color/eco_text_dark" />
 
         <TextView
@@ -276,6 +267,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="12dp"
+            android:gravity="center_horizontal"
             android:textColor="@color/eco_dark_green"
             android:textStyle="bold" />
 
@@ -284,7 +276,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:gravity="center_horizontal"
-            android:text="© 2026 EcoThread Technologies. Built for the Planet."
+            android:text="© 2026 EcoThread Technologies."
             android:textSize="10sp"
             android:textColor="@color/eco_text_gray" />
 

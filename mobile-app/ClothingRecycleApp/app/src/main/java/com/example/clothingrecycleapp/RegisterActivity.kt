@@ -9,7 +9,6 @@ import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -136,9 +135,8 @@ class RegisterActivity : AppCompatActivity() {
                     btnRegister.isEnabled = true
 
                     if (response.isSuccessful && response.body() != null) {
-                        tvRegisterStatus.text = "Registration successful! Redirecting to login..."
-                        startActivity(Intent(this@RegisterActivity, LoginActivity::class.java))
-                        finish()
+                        tvRegisterStatus.text = ""
+                        openVerifyScreen(email, isNgo = false)
                     } else {
                         tvRegisterStatus.text = "Registration failed: $errorText"
                     }
@@ -168,7 +166,7 @@ class RegisterActivity : AppCompatActivity() {
 
                     if (response.isSuccessful && response.body() != null) {
                         tvRegisterStatus.text = ""
-                        showApplicationSubmittedDialog()
+                        openVerifyScreen(request.email, isNgo = true)
                     } else {
                         tvRegisterStatus.text = "Application failed: $errorText"
                     }
@@ -182,20 +180,13 @@ class RegisterActivity : AppCompatActivity() {
         }
     }
 
-    private fun showApplicationSubmittedDialog() {
-        AlertDialog.Builder(this)
-            .setTitle("Application submitted")
-            .setMessage(
-                "Thank you! An admin will review your organisation's details.\n\n" +
-                        "You can log in now. NGO features, such as verifying donations, " +
-                        "unlock once your application is approved."
-            )
-            .setCancelable(false)
-            .setPositiveButton("Go to Login") { _, _ ->
-                startActivity(Intent(this, LoginActivity::class.java))
-                finish()
-            }
-            .show()
+    private fun openVerifyScreen(email: String, isNgo: Boolean) {
+        startActivity(
+            Intent(this, VerifyEmailActivity::class.java)
+                .putExtra(VerifyEmailActivity.EXTRA_EMAIL, email)
+                .putExtra(VerifyEmailActivity.EXTRA_IS_NGO, isNgo)
+        )
+        finish()
     }
 
     // The backend sends errors as {"error": "message"}.

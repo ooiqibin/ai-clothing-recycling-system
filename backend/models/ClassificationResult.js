@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { POINTS_PER_DONATED_ITEM } = require('../config/points');
 
 const classificationResultSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -18,4 +19,8 @@ const classificationResultSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
+// Only reusable items can earn points (when an NGO verifies the donation).
+classificationResultSchema.pre('validate', function () {
+  this.potentialPoints = this.category === 'reusable' ? POINTS_PER_DONATED_ITEM : 0;
+});
 module.exports = mongoose.model('ClassificationResult', classificationResultSchema);

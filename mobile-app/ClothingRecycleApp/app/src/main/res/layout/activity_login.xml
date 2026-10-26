@@ -11,7 +11,6 @@
         android:orientation="vertical"
         android:padding="28dp">
 
-        <!-- Logo / brand -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -41,7 +40,6 @@
             android:textSize="14sp"
             android:textColor="@color/eco_text_gray" />
 
-        <!-- Card -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -62,12 +60,11 @@
 
             <EditText
                 android:id="@+id/etEmail"
+                style="@style/Widget.App.Input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_input"
-                android:hint="hello@ecothread.com"
+                android:hint="Your email"
                 android:inputType="textEmailAddress"
-                android:textSize="14sp"
                 android:layout_marginBottom="16dp" />
 
             <RelativeLayout
@@ -78,28 +75,33 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
                     android:text="Password"
                     android:textSize="13sp"
                     android:textStyle="bold"
                     android:textColor="@color/eco_text_dark" />
 
                 <TextView
+                    android:id="@+id/tvForgotPassword"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
+                    android:minHeight="40dp"
+                    android:gravity="center_vertical"
+                    android:paddingStart="8dp"
                     android:text="Forgot Password?"
-                    android:textSize="12sp"
-                    android:textColor="@color/eco_primary_green" />
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/eco_dark_green" />
             </RelativeLayout>
 
             <EditText
                 android:id="@+id/etPassword"
+                style="@style/Widget.App.Input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_input"
-                android:hint="••••••••"
+                android:hint="Your password"
                 android:inputType="textPassword"
-                android:textSize="14sp"
                 android:layout_marginBottom="20dp" />
 
             <Button
@@ -121,8 +123,9 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="20dp"
+            android:padding="8dp"
             android:text="Don't have an account? Sign Up"
-            android:textSize="13sp"
+            android:textSize="14sp"
             android:textColor="@color/eco_text_dark" />
 
         <TextView
@@ -130,7 +133,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="12dp"
+            android:gravity="center_horizontal"
             android:textColor="@color/eco_dark_green"
             android:textStyle="bold" />
 

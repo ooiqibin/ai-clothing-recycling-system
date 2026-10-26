@@ -57,6 +57,8 @@
             android:background="@drawable/bg_input"
             android:hint="000000"
             android:inputType="number"
+            android:textColor="@color/eco_text_dark"
+            android:textColorHint="@color/eco_text_gray"
             android:maxLength="6"
             android:textSize="20sp"
             android:gravity="center"

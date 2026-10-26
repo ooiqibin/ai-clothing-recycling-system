@@ -21,6 +21,12 @@ data class ClassificationResult(
 
 data class RegisterRequest(val name: String, val email: String, val password: String)
 data class LoginRequest(val email: String, val password: String)
+
+data class RegisterResponse(val verificationRequired: Boolean = false, val email: String? = null)
+data class VerifyEmailRequest(val email: String, val code: String)
+data class ResendCodeRequest(val email: String)
+data class ResendCodeResponse(val message: String? = null)
+
 data class UserData(val id: String, val name: String, val email: String, val rewardPoints: Int, val role: String? = null)
 data class NgoApplicationInfo(val status: String, val rejectionReason: String? = null)
 data class AuthResponse(val token: String, val user: UserData, val ngoApplication: NgoApplicationInfo? = null)
@@ -136,7 +142,15 @@ data class DonationBasketResponse(
 data class PrepareBatchRequest(val itemIds: List<String>, val centerId: String)
 data class PrepareBatchResponse(val verificationCode: String, val totalPoints: Int, val itemCount: Int, val centreName: String? = null)
 
-data class DonationCentreItem(val _id: String, val name: String, val address: String? = null)
+data class DonationCentreItem(
+    val _id: String,
+    val name: String,
+    val address: String? = null,
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+    val phone: String? = null,
+    val openingHours: String? = null
+)
 data class DonationCentresResponse(val centers: List<DonationCentreItem>)
 
 data class SelfUseResponse(val status: String, val pointsAwarded: Int)
@@ -165,10 +179,16 @@ interface ApiService {
     suspend fun classifyClothing(@Part image: MultipartBody.Part): Response<ClassificationResult>
 
     @POST("api/auth/register")
-    suspend fun registerUser(@Body request: RegisterRequest): Response<AuthResponse>
+    suspend fun registerUser(@Body request: RegisterRequest): Response<RegisterResponse>
 
     @POST("api/auth/register-ngo")
-    suspend fun registerNgo(@Body request: RegisterNgoRequest): Response<AuthResponse>
+    suspend fun registerNgo(@Body request: RegisterNgoRequest): Response<RegisterResponse>
+
+    @POST("api/auth/verify-email")
+    suspend fun verifyEmail(@Body request: VerifyEmailRequest): Response<AuthResponse>
+
+    @POST("api/auth/resend-code")
+    suspend fun resendCode(@Body request: ResendCodeRequest): Response<ResendCodeResponse>
 
     @POST("api/auth/login")
     suspend fun loginUser(@Body request: LoginRequest): Response<AuthResponse>

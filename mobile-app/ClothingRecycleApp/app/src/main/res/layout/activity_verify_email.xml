@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/eco_cream_bg"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="28dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="🍃 EcoThread"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/eco_dark_green" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:gravity="center_horizontal"
+            android:text="Verify your email"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:textColor="@color/eco_dark_green" />
+
+        <TextView
+            android:id="@+id/tvVerifyIntro"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center_horizontal"
+            android:textSize="13sp"
+            android:textColor="@color/eco_text_gray" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/bg_card"
+            android:elevation="2dp"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <EditText
+                android:id="@+id/etEmailCode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_input"
+                android:gravity="center"
+                android:hint="000000"
+                android:inputType="number"
+                android:textColor="@color/eco_text_dark"
+                android:textColorHint="@color/eco_text_gray"
+                android:letterSpacing="0.3"
+                android:maxLength="6"
+                android:textSize="24sp" />
+
+            <Button
+                android:id="@+id/btnVerifyEmail"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_button_primary"
+                app:backgroundTint="@android:color/transparent"
+                android:text="Verify"
+                android:textColor="@color/eco_white"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvEmailStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center_horizontal"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvResendCode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="20dp"
+            android:minHeight="48dp"
+            android:gravity="center"
+            android:padding="8dp"
+            android:text="Resend code"
+            android:textColor="@color/eco_dark_green"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvBackToLogin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:minHeight="48dp"
+            android:gravity="center"
+            android:padding="8dp"
+            android:text="Back to login"
+            android:textColor="@color/eco_text_dark"
+            android:textSize="13sp" />
+
+    </LinearLayout>
+</ScrollView>

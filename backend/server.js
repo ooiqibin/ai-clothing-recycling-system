@@ -9,6 +9,8 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const path = require('path');
 
+const serveStoredImage = require('./middleware/serveStoredImage');
+
 const classifyRoutes = require('./routes/classifyRoutes');
 const authRoutes = require('./routes/authRoutes');
 const historyRoutes = require('./routes/historyRoutes');
@@ -26,14 +28,16 @@ const userManagementRoutes = require('./routes/userManagementRoutes');
 const ecoTipRoutes = require('./routes/ecoTipRoutes');
 const rewardRoutes = require('./routes/rewardRoutes');
 
+
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
 
-// Serve uploaded images statically so the Android app can load them by URL
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Serve the file from disk if it is there, otherwise from the copy in the database.
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')), serveStoredImage);
 
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB connected successfully'))

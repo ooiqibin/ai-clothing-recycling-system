@@ -3,6 +3,7 @@ const DonationBatch = require('../models/DonationBatch');
 const User = require('../models/User');
 const mongoose = require('mongoose');
 const DonationCenter = require('../models/DonationCenter');
+const { POINTS_PER_DONATED_ITEM } = require('../config/points');
 
 // GET /api/donation-basket
 // Returns the user's un-batched reusable items, plus their currently active
@@ -19,6 +20,7 @@ const getDonationBasket = async (req, res) => {
     const pendingItemsWithUrls = pendingItems.map((r) => ({
       ...r.toObject(),
       imageUrl: `/uploads/${r.imageFilename}`,
+      potentialPoints: POINTS_PER_DONATED_ITEM,
     }));
 
     const activeBatch = await DonationBatch.findOne({
@@ -37,6 +39,7 @@ const getDonationBasket = async (req, res) => {
         items: activeBatch.itemIds.map((item) => ({
           ...item.toObject(),
           imageUrl: `/uploads/${item.imageFilename}`,
+          potentialPoints: POINTS_PER_DONATED_ITEM,
         })),
       };
     }
@@ -90,7 +93,7 @@ const prepareDonationBatch = async (req, res) => {
       return res.status(400).json({ error: 'No valid items found for this batch' });
     }
 
-    const totalPoints = items.reduce((sum, item) => sum + item.potentialPoints, 0);
+    const totalPoints = items.length * POINTS_PER_DONATED_ITEM;
 
     // Pick a 6-digit code that no other waiting donation is using.
     let verificationCode;
@@ -108,7 +111,13 @@ const prepareDonationBatch = async (req, res) => {
 
     await ClassificationResult.updateMany(
       { _id: { $in: items.map((i) => i._id) } },
-      { $set: { batchId: batch._id, status: 'awaiting_verification' } }
+      {
+        $set: {
+          batchId: batch._id,
+          status: 'awaiting_verification',
+          potentialPoints: POINTS_PER_DONATED_ITEM,
+        },
+      }
     );
 
     res.json({
@@ -139,11 +148,12 @@ const verifyDonationBatch = async (req, res) => {
     const waiting = await DonationBatch.findOne({
       verificationCode,
       status: 'awaiting_verification',
-    }).select('centerId');
+    }).select('centerId itemIds');
 
     if (!waiting) {
       return res.status(404).json({ error: 'Invalid or already-used verification code' });
     }
+    const awarded = waiting.itemIds.length * POINTS_PER_DONATED_ITEM;
 
     // The centre the donor chose (older donations may not have one).
     let centerId = waiting.centerId || null;
@@ -177,6 +187,7 @@ const verifyDonationBatch = async (req, res) => {
           verifiedAt: new Date(),
           verifiedBy: req.userId,
           centerId,
+          totalPoints: awarded,
         },
       },
       { new: true }
@@ -194,7 +205,7 @@ const verifyDonationBatch = async (req, res) => {
     // Set pointsAwarded per item to match its own potentialPoints
     const items = await ClassificationResult.find({ _id: { $in: batch.itemIds } });
     for (const item of items) {
-      item.pointsAwarded = item.potentialPoints;
+      item.pointsAwarded = POINTS_PER_DONATED_ITEM;
       await item.save();
     }
 

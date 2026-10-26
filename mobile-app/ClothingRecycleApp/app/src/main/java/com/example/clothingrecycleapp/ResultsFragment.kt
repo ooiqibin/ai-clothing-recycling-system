@@ -46,7 +46,21 @@ class ResultsFragment : Fragment(R.layout.fragment_results) {
 
         tvResultCategory.text = category.uppercase()
         tvResultConfidence.text = "${((confidence ?: 0f) * 100).toInt()}%"
-        tvResultPoints.text = "+${potentialPoints ?: 0} pts"
+        val tvResultPointsLabel = view.findViewById<TextView>(R.id.tvResultPointsLabel)
+        when (category) {
+            "reusable" -> {
+                tvResultPointsLabel.text = "Earned once an NGO verifies your donation"
+                tvResultPoints.text = "+${potentialPoints ?: 0} pts"
+            }
+            "recyclable" -> {
+                tvResultPointsLabel.text = "Take it to a textile recycling bin, then tap Mark as Recycled"
+                tvResultPoints.text = "No points for recycling"
+            }
+            else -> {
+                tvResultPointsLabel.text = "Dispose of it responsibly, then tap Mark as Disposed"
+                tvResultPoints.text = "No points for disposal"
+            }
+        }
 
         LastResultHolder.imageUrl?.let { url ->
             ivResultImage.load(url) { crossfade(true) }
@@ -68,7 +82,7 @@ class ResultsFragment : Fragment(R.layout.fragment_results) {
             btnFindNGO.visibility = View.GONE
 
             val actionValue = if (category == "recyclable") "recycled" else "disposed"
-            val confirmLabel = if (category == "recyclable") "Confirm Recycling" else "Confirm Disposal"
+            val confirmLabel = if (category == "recyclable") "Mark as Recycled" else "Mark as Disposed"
 
             if (LastResultHolder.confirmed) {
                 btnConfirmAction.text = "Confirmed ✓"
@@ -127,7 +141,7 @@ class ResultsFragment : Fragment(R.layout.fragment_results) {
                 withContext(Dispatchers.Main) {
                     if (response.isSuccessful && response.body() != null) {
                         val body = response.body()!!
-                        Toast.makeText(requireContext(), "+${body.pointsAwarded} pts earned!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "Done. This case is closed.", Toast.LENGTH_SHORT).show()
 
                         (activity as? MainActivity)?.setPointsDisplay(body.totalRewardPoints)
 
