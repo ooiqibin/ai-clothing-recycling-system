@@ -12,7 +12,7 @@ async function main() {
 
   if (!email || password.length < 6) {
     console.error("Usage: node scripts/resetAdminPassword.js admin@email.com 'new-password' [name]");
-    console.error('The password needs at least 6 characters.');
+    console.error('The password needs at least 9 characters.');
     process.exit(1);
   }
 

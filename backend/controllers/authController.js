@@ -71,8 +71,8 @@ const registerUser = async (req, res) => {
     if (!EMAIL_PATTERN.test(email)) {
       return res.status(400).json({ error: 'Please enter a valid email address' });
     }
-    if (password.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    if (password.length < 9) {
+      return res.status(400).json({ error: 'Password must be at least 9 characters' });
     }
 
     user = await User.findOne({ email });
@@ -135,8 +135,8 @@ const registerNgo = async (req, res) => {
     if (!EMAIL_PATTERN.test(email)) {
       return res.status(400).json({ error: 'Please enter a valid email address' });
     }
-    if (password.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    if (password.length < 9) {
+      return res.status(400).json({ error: 'Password must be at least 9 characters' });
     }
 
     user = await User.findOne({ email });
@@ -340,12 +340,18 @@ const resetPassword = async (req, res) => {
     const wrong = () =>
       res.status(400).json({ error: 'That code is not valid. Check it or ask for a new one.' });
 
-    if (newPassword.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    if (newPassword.length < 9) {
+      return res.status(400).json({ error: 'Password must be at least 9 characters' });
     }
+    
     if (!email || !/^\d{6}$/.test(code)) return wrong();
 
     const user = await User.findOne({ email });
+    if (user && await user.comparePassword(newPassword)) {
+    return res.status(400).json({
+      error: 'New password cannot be the same as your previous password',
+    });
+  }
     if (!user) return wrong();
 
     const r = user.passwordReset || {};

@@ -156,8 +156,8 @@ class ForgotPasswordActivity : AppCompatActivity() {
                 showStatus("Please enter the 6-digit code", true)
                 return
             }
-            newPassword.length < 6 -> {
-                showStatus("The new password needs at least 6 characters", true)
+            newPassword.length < 9 -> {
+                showStatus("The new password needs at least 9 characters", true)
                 return
             }
             newPassword != confirm -> {

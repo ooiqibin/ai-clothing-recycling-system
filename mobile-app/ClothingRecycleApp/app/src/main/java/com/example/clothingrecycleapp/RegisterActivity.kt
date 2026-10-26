@@ -94,7 +94,7 @@ class RegisterActivity : AppCompatActivity() {
                     tvRegisterStatus.text = "Please enter a valid email address"
 
                 password.length < 6 ->
-                    tvRegisterStatus.text = "Password must be at least 6 characters"
+                    tvRegisterStatus.text = "Password must be at least 9 characters"
 
                 else -> registerNgo(
                     RegisterNgoRequest(
