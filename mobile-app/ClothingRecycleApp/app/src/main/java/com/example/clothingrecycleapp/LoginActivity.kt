@@ -50,6 +50,12 @@ class LoginActivity : AppCompatActivity() {
             startActivity(Intent(this, RegisterActivity::class.java))
             finish()
         }
+        findViewById<TextView>(R.id.tvForgotPassword).setOnClickListener {
+            startActivity(
+                Intent(this, ForgotPasswordActivity::class.java)
+                    .putExtra(ForgotPasswordActivity.EXTRA_EMAIL, etEmail.text.toString().trim())
+            )
+        }
     }
 
     private fun showStatus(message: String, isError: Boolean) {

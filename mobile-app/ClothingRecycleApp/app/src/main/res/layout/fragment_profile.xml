@@ -171,5 +171,15 @@
             android:text="My Coupons"
             android:textColor="@color/eco_white" />
 
+        <Button
+            android:id="@+id/btnLogout"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/bg_input"
+            android:text="Log out"
+            android:textColor="#B3261E"
+            android:textStyle="bold" />
+
     </LinearLayout>
 </ScrollView>

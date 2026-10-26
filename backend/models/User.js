@@ -29,13 +29,15 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-    // For NGO staff: the donation centre their account belongs to.
+
+  // For NGO staff: the donation centre their account belongs to.
   centerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'DonationCenter',
     default: null,
   },
-    // Admins can suspend an account; a suspended user cannot log in or use the app.
+
+  // Admins can suspend an account; a suspended user cannot log in or use the app.
   suspended: {
     type: Boolean,
     default: false,
@@ -45,6 +47,33 @@ const userSchema = new mongoose.Schema({
     default: '',
   },
   suspendedAt: {
+    type: Date,
+    default: null,
+  },
+
+  // Self-registered accounts must verify their email before they can log in.
+  // This defaults to true, so existing accounts and accounts made by an admin or a
+  // script keep working. The register endpoints set it to false explicitly.
+  emailVerified: {
+    type: Boolean,
+    default: true,
+  },
+  emailVerification: {
+    codeHash: { type: String, default: '' },
+    expiresAt: { type: Date, default: null },
+    attempts: { type: Number, default: 0 },
+    lastSentAt: { type: Date, default: null },
+  },
+
+  // Forgot password: a 6-digit code sent by email (only a hash is stored).
+  passwordReset: {
+    codeHash: { type: String, default: '' },
+    expiresAt: { type: Date, default: null },
+    attempts: { type: Number, default: 0 },
+    lastSentAt: { type: Date, default: null },
+  },
+  // Logins from before this moment stop working (set when the password is reset).
+  passwordChangedAt: {
     type: Date,
     default: null,
   },

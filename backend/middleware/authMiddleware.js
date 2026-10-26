@@ -18,7 +18,9 @@ const protect = async (req, res, next) => {
   }
 
   try {
-    const user = await User.findById(decoded.userId).select('_id role centerId suspended');
+    const user = await User.findById(decoded.userId).select(
+      '_id role centerId suspended passwordChangedAt'
+    );
 
     if (!user) {
       return res.status(401).json({ error: 'Not authorized, user no longer exists' });
@@ -28,6 +30,14 @@ const protect = async (req, res, next) => {
       return res.status(403).json({
         error: 'Your account has been suspended. Please contact support.',
       });
+    }
+
+    // A password reset logs out every older session.
+    if (
+      user.passwordChangedAt &&
+      decoded.iat < Math.floor(user.passwordChangedAt.getTime() / 1000)
+    ) {
+      return res.status(401).json({ error: 'Your password was changed. Please log in again.' });
     }
 
     req.userId = decoded.userId;

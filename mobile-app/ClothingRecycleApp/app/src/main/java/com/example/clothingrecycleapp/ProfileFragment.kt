@@ -1,11 +1,13 @@
 package com.example.clothingrecycleapp
 
 import android.content.Intent
+import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.appcompat.app.AlertDialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -46,6 +48,14 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                     .putExtra(RewardsActivity.EXTRA_TAB, RewardsActivity.TAB_COUPONS)
             )
         }
+        view.findViewById<Button>(R.id.btnLogout).setOnClickListener {
+            AlertDialog.Builder(requireContext())
+                .setTitle("Log out?")
+                .setMessage("You will need to log in again to use the app.")
+                .setPositiveButton("Log out") { _, _ -> logout() }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
 
         loadProfileData(tvProfileName, tvProfileEmail, tvProfilePoints, tvProfileTotalItems, tvProfileCarbonOffset, tvBreakdown)
     }
@@ -63,6 +73,21 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                 it.findViewById(R.id.tvBreakdown)
             )
         }
+    }
+
+    private fun logout() {
+        requireContext().getSharedPreferences("app_prefs", Context.MODE_PRIVATE).edit()
+            .remove("token")
+            .remove("userId")
+            .remove("userName")
+            .remove("role")
+            .remove("rewardPoints")
+            .apply()
+
+        startActivity(
+            Intent(requireContext(), LoginActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        )
     }
 
     private fun loadProfileData(

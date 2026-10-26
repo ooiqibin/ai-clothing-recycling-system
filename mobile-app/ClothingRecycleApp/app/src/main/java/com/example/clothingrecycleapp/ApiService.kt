@@ -26,6 +26,8 @@ data class RegisterResponse(val verificationRequired: Boolean = false, val email
 data class VerifyEmailRequest(val email: String, val code: String)
 data class ResendCodeRequest(val email: String)
 data class ResendCodeResponse(val message: String? = null)
+data class ForgotPasswordRequest(val email: String)
+data class ResetPasswordRequest(val email: String, val code: String, val newPassword: String)
 
 data class UserData(val id: String, val name: String, val email: String, val rewardPoints: Int, val role: String? = null)
 data class NgoApplicationInfo(val status: String, val rejectionReason: String? = null)
@@ -192,6 +194,12 @@ interface ApiService {
 
     @POST("api/auth/login")
     suspend fun loginUser(@Body request: LoginRequest): Response<AuthResponse>
+
+    @POST("api/auth/forgot-password")
+    suspend fun forgotPassword(@Body request: ForgotPasswordRequest): Response<MessageResponse>
+
+    @POST("api/auth/reset-password")
+    suspend fun resetPassword(@Body request: ResetPasswordRequest): Response<MessageResponse>
 
     @GET("api/history")
     suspend fun getHistory(): Response<HistoryResponse>
