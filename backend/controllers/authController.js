@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const NgoApplication = require('../models/NgoApplication');
 const { sendVerificationEmail, sendPasswordResetEmail } = require('../utils/mailer');
+const { OAuth2Client } = require('google-auth-library');
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CODE_TTL_MS = 10 * 60 * 1000;
@@ -10,6 +11,115 @@ const RESEND_COOLDOWN_MS = 60 * 1000;
 const MAX_CODE_ATTEMPTS = 5;
 
 const clean = (value) => String(value || '').trim();
+
+const googleClient = new OAuth2Client();
+
+// POST /api/auth/google
+const googleAuth = async (req, res) => {
+  try {
+    const idToken = clean(req.body.idToken);
+
+    if (!idToken) {
+      return res.status(400).json({
+        error: 'Google ID token is required',
+      });
+    }
+
+    if (!process.env.GOOGLE_WEB_CLIENT_ID) {
+      console.error('GOOGLE_WEB_CLIENT_ID is not configured');
+
+      return res.status(500).json({
+        error: 'Google login is not configured on the server',
+      });
+    }
+
+    // Verify the token with Google. Never trust an email sent
+    // directly by the Android client.
+    const ticket = await googleClient.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_WEB_CLIENT_ID,
+    });
+
+    const google = ticket.getPayload();
+
+    if (
+      !google ||
+      !google.sub ||
+      !google.email ||
+      google.email_verified !== true
+    ) {
+      return res.status(401).json({
+        error: 'Google account could not be verified',
+      });
+    }
+
+    const email = clean(google.email).toLowerCase();
+    const name = clean(google.name) || email.split('@')[0];
+
+    let user = await User.findOne({ email });
+
+    if (user) {
+      // Do not let Google login bypass a suspension.
+      if (user.suspended) {
+        return res.status(403).json({
+          error: 'This account has been suspended. Please contact support.',
+        });
+      }
+
+      // Google has verified ownership of this email.
+      if (user.emailVerified === false) {
+        user.emailVerified = true;
+        user.emailVerification = {
+          codeHash: '',
+          expiresAt: null,
+          attempts: 0,
+          lastSentAt: null,
+        };
+
+        await user.save();
+      }
+
+      // Keep the existing user's role and NGO application unchanged.
+    } else {
+      // Generate a random password so the account can use the
+      // existing password-based schema without exposing a password.
+      const randomPassword = crypto.randomBytes(32).toString('hex');
+
+      user = new User({
+        name,
+        email,
+        password: randomPassword,
+        emailVerified: true,
+        role: 'user',
+      });
+
+      await user.save();
+    }
+
+    const application = await NgoApplication.findOne({
+      userId: user._id,
+    })
+      .select('status rejectionReason')
+      .lean();
+
+    return res.json({
+      token: generateToken(user._id),
+      user: publicUser(user),
+      ngoApplication: application
+        ? {
+            status: application.status,
+            rejectionReason: application.rejectionReason,
+          }
+        : null,
+    });
+  } catch (error) {
+    console.error('Google login error:', error.message);
+
+    return res.status(401).json({
+      error: 'Google login failed. Please try again.',
+    });
+  }
+};
 
 // Helper to create a signed login token for a given user
 const generateToken = (userId) => {
@@ -456,4 +566,5 @@ module.exports = {
   forgotPassword,
   resetPassword,
   loginUser,
+  googleAuth,
 };

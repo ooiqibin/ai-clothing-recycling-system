@@ -30,6 +30,15 @@ data class ForgotPasswordRequest(val email: String)
 data class ResetPasswordRequest(val email: String, val code: String, val newPassword: String)
 
 data class UserData(val id: String, val name: String, val email: String, val rewardPoints: Int, val role: String? = null)
+data class GoogleAuthRequest(
+    val idToken: String
+)
+
+data class GoogleAuthResponse(
+    val token: String,
+    val user: UserData,
+    val ngoApplication: NgoApplicationInfo? = null
+)
 data class NgoApplicationInfo(val status: String, val rejectionReason: String? = null)
 data class AuthResponse(val token: String, val user: UserData, val ngoApplication: NgoApplicationInfo? = null)
 data class RegisterNgoRequest(
@@ -41,6 +50,36 @@ data class RegisterNgoRequest(
     val contactPhone: String,
     val address: String,
     val about: String
+)
+
+data class NgoReportCentre(
+    val name: String,
+    val address: String? = null
+)
+
+data class NgoReportSummary(
+    val totalDonations: Int = 0,
+    val verifiedDonations: Int = 0,
+    val pendingDonations: Int = 0,
+    val totalItems: Int = 0,
+    val totalPoints: Int = 0
+)
+
+data class NgoReportDonation(
+    val id: String,
+    val status: String,
+    val itemCount: Int = 0,
+    val totalPoints: Int = 0,
+    val createdAt: String? = null,
+    val verifiedAt: String? = null,
+    val donorName: String = "Donor"
+)
+
+data class NgoDonationReportResponse(
+    val centre: NgoReportCentre,
+    val generatedAt: String? = null,
+    val summary: NgoReportSummary,
+    val donations: List<NgoReportDonation> = emptyList()
 )
 
 data class NgoCentreInfo(val name: String, val address: String?, val phone: String?, val openingHours: String?)
@@ -201,6 +240,9 @@ interface ApiService {
     @POST("api/auth/reset-password")
     suspend fun resetPassword(@Body request: ResetPasswordRequest): Response<MessageResponse>
 
+    @POST("api/auth/google")
+    suspend fun googleAuth(@Body request: GoogleAuthRequest): Response<GoogleAuthResponse>
+
     @GET("api/history")
     suspend fun getHistory(): Response<HistoryResponse>
 
@@ -209,6 +251,9 @@ interface ApiService {
 
     @GET("api/ngo/application")
     suspend fun getMyNgoApplication(): Response<NgoApplicationResponse>
+
+    @GET("api/ngo/report")
+    suspend fun getNgoDonationReport(): Response<NgoDonationReportResponse>
 
     @GET("api/ngo/overview")
     suspend fun getNgoOverview(): Response<NgoOverviewResponse>

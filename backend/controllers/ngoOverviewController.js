@@ -109,5 +109,84 @@ const getNgoOverview = async (req, res) => {
     res.status(500).json({ error: 'Could not load your centre overview' });
   }
 };
+const getNgoDonationReport = async (req, res) => {
+  try {
+    if (!req.userCenterId) {
+      return res.status(403).json({
+        error: 'Your NGO account is not linked to a donation centre yet.',
+      });
+    }
 
-module.exports = { getNgoOverview };
+    const centerId = new mongoose.Types.ObjectId(
+      String(req.userCenterId)
+    );
+
+    const centre = await DonationCenter.findById(centerId)
+      .select('name address')
+      .lean();
+
+    if (!centre) {
+      return res.status(404).json({
+        error: 'Your donation centre no longer exists',
+      });
+    }
+
+    const batches = await DonationBatch.find({ centerId })
+      .sort({ createdAt: -1 })
+      .populate('userId', 'name')
+      .lean();
+
+    const donations = batches.map((batch) => ({
+      id: String(batch._id),
+      status: batch.status,
+      itemCount: Array.isArray(batch.itemIds)
+        ? batch.itemIds.length
+        : 0,
+      totalPoints: Number(batch.totalPoints || 0),
+      createdAt: batch.createdAt || null,
+      verifiedAt: batch.verifiedAt || null,
+      donorName: batch.userId?.name || 'Donor',
+    }));
+
+    const verified = donations.filter(
+      (item) => item.status === 'verified'
+    );
+
+    const pending = donations.filter(
+      (item) => item.status === 'awaiting_verification'
+    );
+
+    return res.json({
+      centre: {
+        name: centre.name,
+        address: centre.address || '',
+      },
+      generatedAt: new Date().toISOString(),
+      summary: {
+        totalDonations: donations.length,
+        verifiedDonations: verified.length,
+        pendingDonations: pending.length,
+        totalItems: verified.reduce(
+          (sum, item) => sum + item.itemCount,
+          0
+        ),
+        totalPoints: verified.reduce(
+          (sum, item) => sum + item.totalPoints,
+          0
+        ),
+      },
+      donations,
+    });
+  } catch (error) {
+    console.error('getNgoDonationReport error:', error.message);
+
+    return res.status(500).json({
+      error: 'Could not generate your donation report',
+    });
+  }
+};
+
+module.exports = {
+   getNgoOverview,
+   getNgoDonationReport, 
+  };

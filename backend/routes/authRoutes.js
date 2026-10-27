@@ -9,6 +9,8 @@ const {
   resetPassword,
   loginUser,
 } = require('../controllers/authController');
+const { googleAuth } =
+  require('../controllers/googleAuthController');
 
 router.post('/register', registerUser);
 router.post('/register-ngo', registerNgo);
@@ -17,5 +19,6 @@ router.post('/resend-code', resendCode);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 router.post('/login', loginUser);
+router.post('/google', googleAuth);
 
 module.exports = router;
