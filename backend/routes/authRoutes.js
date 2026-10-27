@@ -8,9 +8,8 @@ const {
   forgotPassword,
   resetPassword,
   loginUser,
+  googleAuth,
 } = require('../controllers/authController');
-const { googleAuth } =
-  require('../controllers/googleAuthController');
 
 router.post('/register', registerUser);
 router.post('/register-ngo', registerNgo);
