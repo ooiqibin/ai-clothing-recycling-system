@@ -53,8 +53,6 @@ const getDonationBasket = async (req, res) => {
 
 // POST /api/donation-basket/prepare
 // body: { itemIds: [...] }
-// POST /api/donation-basket/prepare
-// body: { itemIds: [...], centerId }
 const prepareDonationBatch = async (req, res) => {
   try {
     const { itemIds, centerId } = req.body;
@@ -133,98 +131,270 @@ const prepareDonationBatch = async (req, res) => {
   }
 };
 
+const previewDonationBatch = async (req, res) => {
+  try {
+    if (req.userRole !== 'ngo' && req.userRole !== 'admin') {
+      return res.status(403).json({
+        error: 'Only NGO personnel can inspect donations'
+      });
+    }
+
+    const verificationCode = String(
+      req.body.verificationCode || ''
+    ).trim();
+
+    if (!/^\d{6}$/.test(verificationCode)) {
+      return res.status(400).json({
+        error: 'A valid 6-digit verification code is required'
+      });
+    }
+
+    const batch = await DonationBatch.findOne({
+      verificationCode,
+      status: 'awaiting_verification'
+    })
+      .populate('userId', 'name email')
+      .populate(
+        'itemIds',
+        'category imageFilename createdAt'
+      )
+      .populate('centerId', 'name address');
+
+    if (!batch) {
+      return res.status(404).json({
+        error: 'Invalid or already-used verification code'
+      });
+    }
+
+    // NGO personnel can only inspect donations assigned
+    // to their own donation centre.
+    if (req.userRole === 'ngo') {
+      if (!req.userCenterId) {
+        return res.status(403).json({
+          error: 'Your NGO account is not linked to a donation centre'
+        });
+      }
+
+      if (
+        batch.centerId &&
+        String(batch.centerId._id || batch.centerId) !==
+          String(req.userCenterId)
+      ) {
+        return res.status(403).json({
+          error: 'This donation belongs to a different centre'
+        });
+      }
+    }
+
+    return res.json({
+      verificationCode: batch.verificationCode,
+      donorName: batch.userId?.name || 'Unknown donor',
+      centreName: batch.centerId?.name || null,
+      itemCount: batch.itemIds.length,
+
+      items: batch.itemIds.map((item) => ({
+        id: String(item._id),
+        category: item.category,
+        imageUrl: item.imageFilename
+          ? `/uploads/${item.imageFilename}`
+          : null,
+        pointsPerItem: POINTS_PER_DONATED_ITEM
+      }))
+    });
+  } catch (error) {
+    console.error('Preview donation error:', error);
+
+    return res.status(500).json({
+      error: 'Failed to load donation details'
+    });
+  }
+};
+
 // POST /api/verify (NGO staff and admins only)
 // body: { verificationCode, centerId? }   centerId is only used when an admin verifies
-// POST /api/verify (NGO staff and admins only)
-// body: { verificationCode, centerId? }   centerId is only used by an admin, for a donation with no centre yet
 const verifyDonationBatch = async (req, res) => {
   try {
-    const verificationCode = String(req.body.verificationCode || '').trim();
+    if (req.userRole !== 'ngo' && req.userRole !== 'admin') {
+      return res.status(403).json({
+        error: 'Only NGO personnel can verify donations'
+      });
+    }
 
-    if (!verificationCode) {
-      return res.status(400).json({ error: 'Verification code is required' });
+    const verificationCode = String(
+      req.body.verificationCode || ''
+    ).trim();
+
+    const { acceptedItemIds } = req.body;
+
+    if (!/^\d{6}$/.test(verificationCode)) {
+      return res.status(400).json({
+        error: 'Invalid verification code'
+      });
+    }
+
+    if (
+      !Array.isArray(acceptedItemIds) ||
+      acceptedItemIds.length === 0
+    ) {
+      return res.status(400).json({
+        error: 'Select at least one received item'
+      });
+    }
+
+    if (
+      acceptedItemIds.some(
+        id => !mongoose.isValidObjectId(id)
+      ) ||
+      new Set(acceptedItemIds.map(String)).size !==
+        acceptedItemIds.length
+    ) {
+      return res.status(400).json({
+        error: 'Invalid or duplicate item IDs'
+      });
     }
 
     const waiting = await DonationBatch.findOne({
       verificationCode,
-      status: 'awaiting_verification',
-    }).select('centerId itemIds');
+      status: 'awaiting_verification'
+    }).select('userId centerId itemIds');
 
     if (!waiting) {
-      return res.status(404).json({ error: 'Invalid or already-used verification code' });
+      return res.status(404).json({
+        error: 'Invalid or already-used verification code'
+      });
     }
-    const awarded = waiting.itemIds.length * POINTS_PER_DONATED_ITEM;
 
-    // The centre the donor chose (older donations may not have one).
+    // Check the NGO's assigned centre.
     let centerId = waiting.centerId || null;
 
     if (req.userRole === 'ngo') {
       if (!req.userCenterId) {
         return res.status(403).json({
-          error: 'Your NGO account is not linked to a donation centre yet. Ask an admin to link it.',
+          error: 'Your NGO account has no assigned centre'
         });
       }
-      if (centerId && String(centerId) !== String(req.userCenterId)) {
+
+      if (
+        centerId &&
+        String(centerId) !== String(req.userCenterId)
+      ) {
         return res.status(403).json({
-          error: 'This donation was made to a different donation centre.',
+          error: 'This donation belongs to a different centre'
         });
       }
+
       centerId = req.userCenterId;
-    } else if (!centerId && req.body.centerId) {
-      if (!mongoose.isValidObjectId(req.body.centerId)) {
-        return res.status(400).json({ error: 'Invalid donation centre' });
-      }
-      centerId = req.body.centerId;
     }
 
-    // Only one request can switch awaiting_verification -> verified,
-    // so points can never be given twice for the same code.
+    // Every accepted ID must belong to this batch.
+    const originalIds = waiting.itemIds.map(String);
+    const originalIdSet = new Set(originalIds);
+
+    if (
+      acceptedItemIds.some(
+        id => !originalIdSet.has(String(id))
+      )
+    ) {
+      return res.status(400).json({
+        error: 'Selected items do not belong to this donation'
+      });
+    }
+
+    const acceptedIds = acceptedItemIds.map(
+      id => new mongoose.Types.ObjectId(id)
+    );
+
+    const acceptedIdSet = new Set(
+      acceptedItemIds.map(String)
+    );
+
+    const rejectedIds = waiting.itemIds.filter(
+      id => !acceptedIdSet.has(String(id))
+    );
+
+    const points =
+      acceptedIds.length * POINTS_PER_DONATED_ITEM;
+
+    // Claim the batch once to prevent duplicate verification.
     const batch = await DonationBatch.findOneAndUpdate(
-      { _id: waiting._id, status: 'awaiting_verification' },
+      {
+        _id: waiting._id,
+        status: 'awaiting_verification'
+      },
       {
         $set: {
           status: 'verified',
           verifiedAt: new Date(),
           verifiedBy: req.userId,
           centerId,
-          totalPoints: awarded,
-        },
+          itemIds: acceptedIds,
+          totalPoints: points
+        }
       },
       { new: true }
     );
 
     if (!batch) {
-      return res.status(404).json({ error: 'Invalid or already-used verification code' });
+      return res.status(409).json({
+        error: 'This donation has already been verified'
+      });
     }
 
+    // Accepted items: mark as donated and award 5 points each.
     await ClassificationResult.updateMany(
-      { _id: { $in: batch.itemIds } },
-      { $set: { status: 'donated' } }
+      {
+        _id: { $in: acceptedIds },
+        userId: batch.userId,
+        batchId: batch._id,
+        status: 'awaiting_verification'
+      },
+      {
+        $set: {
+          status: 'donated',
+          pointsAwarded: POINTS_PER_DONATED_ITEM
+        }
+      }
     );
 
-    // Set pointsAwarded per item to match its own potentialPoints
-    const items = await ClassificationResult.find({ _id: { $in: batch.itemIds } });
-    for (const item of items) {
-      item.pointsAwarded = POINTS_PER_DONATED_ITEM;
-      await item.save();
+    // Unaccepted items: return them to the user's pending basket.
+    if (rejectedIds.length > 0) {
+      await ClassificationResult.updateMany(
+        {
+          _id: { $in: rejectedIds },
+          userId: batch.userId,
+          batchId: batch._id,
+          status: 'awaiting_verification'
+        },
+        {
+          $set: {
+            status: 'pending',
+            batchId: null,
+            pointsAwarded: 0
+          }
+        }
+      );
     }
 
     const donor = await User.findByIdAndUpdate(
       batch.userId,
-      { $inc: { rewardPoints: batch.totalPoints } },
+      { $inc: { rewardPoints: points } },
       { new: true }
     );
 
-    res.json({
-      itemCount: batch.itemIds.length,
-      pointsAwarded: batch.totalPoints,
-      donorName: donor ? donor.name : 'the donor',
+    return res.json({
+      itemCount: acceptedIds.length,
+      rejectedItemCount: rejectedIds.length,
+      pointsAwarded: points,
+      donorName: donor?.name || 'the donor',
+      message: `Verified ${acceptedIds.length} item(s); ${points} points awarded.`
     });
-
   } catch (error) {
-    console.error('Error verifying donation batch:', error.message);
-    res.status(500).json({ error: 'Failed to verify donation batch' });
+    console.error('Verify donation error:', error);
+
+    return res.status(500).json({
+      error: 'Failed to verify donation'
+    });
   }
 };
 
-module.exports = { getDonationBasket, prepareDonationBatch, verifyDonationBatch };
+module.exports = { getDonationBasket, prepareDonationBatch, previewDonationBatch, verifyDonationBatch };

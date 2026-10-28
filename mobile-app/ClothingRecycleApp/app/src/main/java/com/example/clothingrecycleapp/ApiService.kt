@@ -98,6 +98,26 @@ data class NgoOverviewResponse(
     val perDay: List<NgoDay> = emptyList()
 )
 
+data class VerifyPreviewRequest(
+    val verificationCode: String
+)
+
+data class VerifyPreviewItem(
+    val id: String,
+    val category: String,
+    val imageUrl: String? = null,
+    val createdAt: String? = null,
+    val pointsPerItem: Int = 5
+)
+
+data class VerifyResponse(
+    val itemCount: Int,
+    val rejectedItemCount: Int = 0,
+    val pointsAwarded: Int,
+    val donorName: String,
+    val message: String? = null
+)
+
 data class HistoryItem(
     val _id: String,
     val category: String,
@@ -109,7 +129,6 @@ data class HistoryItem(
     val imageUrl: String,
     val createdAt: String
 )
-
 
 data class NgoApplicationResponse(val application: NgoApplicationInfo?)
 
@@ -153,9 +172,18 @@ data class ConfirmActionResponse(val status: String, val pointsAwarded: Int, val
 
 data class PrepareDonationResponse(val verificationCode: String, val status: String)
 
-data class VerifyRequest(val verificationCode: String)
-data class VerifyResponse(val itemCount: Int, val pointsAwarded: Int, val donorName: String)
+data class VerifyPreviewResponse(
+    val verificationCode: String,
+    val donorName: String,
+    val centreName: String? = null,
+    val itemCount: Int,
+    val items: List<VerifyPreviewItem>
+)
 
+data class VerifyRequest(
+    val verificationCode: String,
+    val acceptedItemIds: List<String>
+)
 data class DonationItem(
     val _id: String,
     val category: String,
@@ -258,6 +286,12 @@ interface ApiService {
     @GET("api/ngo/overview")
     suspend fun getNgoOverview(): Response<NgoOverviewResponse>
 
+    @POST("api/verify/preview")
+    suspend fun previewDonation(@Body request: VerifyPreviewRequest): Response<VerifyPreviewResponse>
+
+    @POST("api/verify")
+    suspend fun verifyDonation(@Body request: VerifyRequest): Response<VerifyResponse>
+
     @POST("api/history/{id}/confirm")
     suspend fun confirmAction(@Path("id") id: String, @Body request: ConfirmActionRequest): Response<ConfirmActionResponse>
 
@@ -266,9 +300,6 @@ interface ApiService {
 
     @POST("api/history/{id}/prepare-donation")
     suspend fun prepareDonation(@Path("id") id: String): Response<PrepareDonationResponse>
-
-    @POST("api/verify")
-    suspend fun verifyDonation(@Body request: VerifyRequest): Response<VerifyResponse>
 
     @GET("api/donation-basket")
     suspend fun getDonationBasket(): Response<DonationBasketResponse>
