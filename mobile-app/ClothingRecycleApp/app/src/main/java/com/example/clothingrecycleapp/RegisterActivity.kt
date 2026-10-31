@@ -101,14 +101,14 @@ class RegisterActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            if (!cbRegisterAsNgo.isChecked) {
-                registerUser(name, email, password)
-                return@setOnClickListener
-            }
-
             if (!cbAgree.isChecked) {
                 tvRegisterStatus.text =
                     "Please agree to the terms of service and sustainability pledge."
+                return@setOnClickListener
+            }
+            // Normal user registration
+            if (!cbRegisterAsNgo.isChecked) {
+                registerUser(name, email, password)
                 return@setOnClickListener
             }
 
