@@ -63,10 +63,7 @@ class DonateFragment : Fragment(R.layout.fragment_donate) {
         loadBasket(view)
     }
 
-    // ---------------------------------------------------------------
     // Small helpers
-    // ---------------------------------------------------------------
-
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
     private fun label(text: String, size: Float, colorRes: Int, bold: Boolean = false): TextView =
@@ -107,10 +104,7 @@ class DonateFragment : Fragment(R.layout.fragment_donate) {
                 PackageManager.PERMISSION_GRANTED
     }
 
-    // ---------------------------------------------------------------
     // The basket
-    // ---------------------------------------------------------------
-
     private fun loadBasket(rootView: View) {
         val activeBatchContainer = rootView.findViewById<LinearLayout>(R.id.activeBatchContainer)
         val tvActiveBatchCode = rootView.findViewById<TextView>(R.id.tvActiveBatchCode)
@@ -206,10 +200,7 @@ class DonateFragment : Fragment(R.layout.fragment_donate) {
         return BarcodeEncoder().encodeBitmap(content, BarcodeFormat.QR_CODE, size, size)
     }
 
-    // ---------------------------------------------------------------
     // Choosing where to hand in the donation
-    // ---------------------------------------------------------------
-
     private fun prepareDonation(button: Button) {
         if (selectedIds.isEmpty()) {
             Toast.makeText(requireContext(), "Select at least one item first", Toast.LENGTH_SHORT).show()

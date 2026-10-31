@@ -57,10 +57,7 @@ class RewardsActivity : AppCompatActivity() {
         selectTab(intent.getStringExtra(EXTRA_TAB) ?: TAB_CATALOG)
     }
 
-    // ---------------------------------------------------------------
     // Small helpers
-    // ---------------------------------------------------------------
-
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
     private fun cardParams(): LinearLayout.LayoutParams =
@@ -175,9 +172,7 @@ class RewardsActivity : AppCompatActivity() {
         if (tab == TAB_CATALOG) loadCatalog() else loadCoupons()
     }
 
-    // ---------------------------------------------------------------
     // Rewards catalog
-    // ---------------------------------------------------------------
 
     private fun loadCatalog() {
         CoroutineScope(Dispatchers.IO).launch {
@@ -300,10 +295,7 @@ class RewardsActivity : AppCompatActivity() {
         }
     }
 
-    // ---------------------------------------------------------------
     // My coupons
-    // ---------------------------------------------------------------
-
     private fun loadCoupons() {
         CoroutineScope(Dispatchers.IO).launch {
             try {

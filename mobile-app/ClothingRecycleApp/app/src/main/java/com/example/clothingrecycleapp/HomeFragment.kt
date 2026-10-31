@@ -45,9 +45,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         loadRecentItems(tvTotalPointsInline, tvTotalItems, recentContainer)
     }
 
-    // ---------------------------------------------------------------
     // Eco tips
-    // ---------------------------------------------------------------
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
@@ -146,9 +144,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
-    // ---------------------------------------------------------------
+
     // Recent contributions
-    // ---------------------------------------------------------------
 
     private fun loadRecentItems(
         tvTotalPointsInline: TextView,

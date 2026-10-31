@@ -132,9 +132,7 @@ class VerifyFragment : Fragment(R.layout.fragment_verify) {
         }
     }
 
-    // ---------------------------------------------------------------
     // Verifying a code (unchanged)
-    // ---------------------------------------------------------------
 
     private fun verify(code: String) {
         if (code.length != 6 || !code.all { it.isDigit() }) {

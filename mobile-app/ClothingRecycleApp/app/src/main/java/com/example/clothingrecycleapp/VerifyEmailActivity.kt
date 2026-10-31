@@ -103,8 +103,10 @@ class VerifyEmailActivity : AppCompatActivity() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val response = RetrofitClient.apiService.verifyEmail(VerifyEmailRequest(email, code))
-                val errorText = if (response.isSuccessful) null else readErrorMessage(response.errorBody()?.string())
+                val response = RetrofitClient.apiService.verifyEmail(
+                    VerifyEmailRequest(email, code))
+                val errorText = if (response.isSuccessful) null else readErrorMessage(
+                    response.errorBody()?.string())
 
                 withContext(Dispatchers.Main) {
                     if (isFinishing || isDestroyed) return@withContext
@@ -144,7 +146,8 @@ class VerifyEmailActivity : AppCompatActivity() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val response = RetrofitClient.apiService.resendCode(ResendCodeRequest(email))
+                val response = RetrofitClient.apiService.resendCode(
+                    ResendCodeRequest(email))
                 val errorText = if (response.isSuccessful) null else readErrorMessage(response.errorBody()?.string())
 
                 withContext(Dispatchers.Main) {

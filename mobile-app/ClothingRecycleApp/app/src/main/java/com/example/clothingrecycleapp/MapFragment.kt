@@ -203,9 +203,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
             }
     }
 
-    // ---------------------------------------------------------------
     // Device location
-    // ---------------------------------------------------------------
 
     private fun requestCurrentLocation() {
         val context = context ?: return
@@ -366,9 +364,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
         map.invalidate()
     }
 
-    // ---------------------------------------------------------------
     // Searching
-    // ---------------------------------------------------------------
 
     private fun searchPlaces(category: String, forceRefresh: Boolean = false) {
         if (!hasRealLocation) {
@@ -376,8 +372,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
             resultInfo.text = "Tap My Location once GPS is ready"
             return
         }
-
-        // Use saved results when we already searched this category here.
+        // Use saved results when we already searched category here.
         if (!forceRefresh) {
             val cached = placeCache[category]
             if (cached != null) {
@@ -690,10 +685,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
         }
     }
 
-    // ---------------------------------------------------------------
     // Showing results
-    // ---------------------------------------------------------------
-
     private fun displayPlaces(category: String, places: List<Place>) {
         // Remove only the place markers, never the blue "You are here" dot.
         placeMarkers.forEach { map.overlays.remove(it) }
@@ -884,9 +876,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
         }
     }
 
-    // ---------------------------------------------------------------
     // Lifecycle
-    // ---------------------------------------------------------------
 
     override fun onResume() {
         super.onResume()

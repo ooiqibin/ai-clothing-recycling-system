@@ -64,8 +64,17 @@ const classifyImage = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error during classification:', error.message);
-    res.status(500).json({ error: 'Classification failed. AI service may be unreachable.' });
+    console.error('Classification error:', {
+      message: error.message,
+      status: error.response?.status,
+      response: error.response?.data,
+      url: error.config?.url,
+    });
+
+    res.status(500).json({
+      error: 'Classification failed.',
+      details: error.response?.data || error.message,
+    });
   }
 };
 

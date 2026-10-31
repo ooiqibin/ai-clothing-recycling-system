@@ -147,13 +147,13 @@ export default function NgoAccounts({ onLogout }) {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Password (min 6)
+                Password (min 9)
               </label>
               <input
                 type="password"
                 className={inputClass}
                 required
-                minLength={6}
+                minLength={9}
                 value={form.password}
                 onChange={(e) => update('password', e.target.value)}
               />
