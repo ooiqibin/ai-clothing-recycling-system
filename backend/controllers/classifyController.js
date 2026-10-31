@@ -7,9 +7,7 @@ const ClassificationResult = require('../models/ClassificationResult');
 const AI_SERVICE_URL ='https://ai-clothing-recycling-system-1.onrender.com/predict';
 
 const POTENTIAL_POINTS_MAP = {
-  reusable: 10,
-  recyclable: 5,
-  damaged: 1,
+  reusable: 5,
 };
 
 const classifyImage = async (req, res) => {

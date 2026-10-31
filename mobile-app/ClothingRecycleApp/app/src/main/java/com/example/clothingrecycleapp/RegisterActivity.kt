@@ -23,6 +23,7 @@ class RegisterActivity : AppCompatActivity() {
     private lateinit var etName: EditText
     private lateinit var etEmail: EditText
     private lateinit var etPassword: EditText
+    private lateinit var cbAgree: CheckBox
     private lateinit var btnRegister: Button
     private lateinit var btnGoogleRegister: Button
     private lateinit var tvGoToLogin: TextView
@@ -46,6 +47,7 @@ class RegisterActivity : AppCompatActivity() {
         etName = findViewById(R.id.etName)
         etEmail = findViewById(R.id.etEmail)
         etPassword = findViewById(R.id.etPassword)
+        cbAgree = findViewById(R.id.cbAgree)
         btnRegister = findViewById(R.id.btnRegister)
         btnGoogleRegister = findViewById(R.id.btnGoogleRegister)
         tvGoToLogin = findViewById(R.id.tvGoToLogin)
@@ -102,6 +104,12 @@ class RegisterActivity : AppCompatActivity() {
 
             if (!cbRegisterAsNgo.isChecked) {
                 registerUser(name, email, password)
+                return@setOnClickListener
+            }
+
+            if (!cbAgree.isChecked) {
+                tvRegisterStatus.text =
+                    "Please agree to the terms of service and sustainability pledge."
                 return@setOnClickListener
             }
 
