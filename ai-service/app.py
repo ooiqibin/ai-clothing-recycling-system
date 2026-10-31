@@ -6,7 +6,7 @@ import io
 
 app = Flask(__name__)
 
-# ----- LOAD MODEL AND CLASS NAMES ONCE AT STARTUP (not per-request, for speed) -----
+# LOAD MODEL AND CLASS NAMES ONCE AT STARTUP (not per-request, for speed)
 MODEL_PATH = "model/clothing_classifier.keras"
 CLASS_NAMES_PATH = "model/class_names.txt"
 IMG_SIZE = (224, 224)
