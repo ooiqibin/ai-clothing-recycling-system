@@ -1,22 +1,29 @@
+
 import tensorflow as tf
 from tensorflow.keras import layers, models
 from tensorflow.keras.applications import MobileNetV2
 from sklearn.utils.class_weight import compute_class_weight
+from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
 import numpy as np
+import matplotlib.pyplot as plt
+import json
 import os
 
 # ----- CONFIG -----
 DATASET_DIR = "dataset"
-IMG_SIZE = (224, 224)      # MobileNetV2's expected input size
+IMG_SIZE = (224, 224)
 BATCH_SIZE = 16
-EPOCHS = 20
+
+INITIAL_EPOCHS = 10
+FINE_TUNE_EPOCHS = 10
+FINE_TUNE_LAYERS = 30
+
 MODEL_SAVE_PATH = "model/clothing_classifier.keras"
 
 os.makedirs("model", exist_ok=True)
 tf.keras.utils.set_random_seed(42)
 
 # ----- LOAD DATASET -----
-# Automatically splits into train/validation, and reads class names from folder names
 train_ds = tf.keras.utils.image_dataset_from_directory(
     DATASET_DIR,
     validation_split=0.2,
@@ -38,23 +45,24 @@ val_ds = tf.keras.utils.image_dataset_from_directory(
 class_names = train_ds.class_names
 print(f"\nClasses found: {class_names}\n")
 
-# Save class names to a file so the Flask inference service knows the label order
 with open("model/class_names.txt", "w") as f:
     f.write("\n".join(class_names))
 
-# ----- COMPUTE CLASS WEIGHTS (to handle imbalance, e.g. 54 damaged vs 21 recyclable) -----
-all_labels = np.concatenate([y.numpy() for _, y in train_ds.unbatch().batch(1000)])
+# ----- CLASS WEIGHTS -----
+all_labels = np.concatenate([
+    y.numpy() for _, y in train_ds.unbatch().batch(1000)
+])
+
 class_weights_array = compute_class_weight(
     class_weight="balanced",
     classes=np.unique(all_labels),
     y=all_labels
 )
+
 class_weights = dict(enumerate(class_weights_array))
-print(f"Class weights (to balance imbalanced dataset): {class_weights}\n")
+print(f"Class weights: {class_weights}\n")
 
 # ----- DATA AUGMENTATION -----
-# Since your dataset is small, augmentation artificially creates more variety
-# (flips, rotations, zoom) to help the model generalize better and avoid overfitting.
 data_augmentation = tf.keras.Sequential([
     layers.RandomFlip("horizontal"),
     layers.RandomRotation(0.15),
@@ -62,20 +70,27 @@ data_augmentation = tf.keras.Sequential([
     layers.RandomContrast(0.15),
 ])
 
-# ----- PREPROCESSING -----
+# ----- DATASET PERFORMANCE -----
+AUTOTUNE = tf.data.AUTOTUNE
+
+train_ds = train_ds.cache().shuffle(200).prefetch(
+    buffer_size=AUTOTUNE
+)
+
+val_ds = val_ds.cache().prefetch(
+    buffer_size=AUTOTUNE
+)
+
+# ----- BUILD MODEL -----
 preprocess_input = tf.keras.applications.mobilenet_v2.preprocess_input
 
-AUTOTUNE = tf.data.AUTOTUNE
-train_ds = train_ds.cache().shuffle(200).prefetch(buffer_size=AUTOTUNE)
-val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
-
-# ----- BUILD THE MODEL -----
 base_model = MobileNetV2(
     input_shape=IMG_SIZE + (3,),
-    include_top=False,      # exclude MobileNet's original 1000-class output layer
+    include_top=False,
     weights="imagenet"
 )
-base_model.trainable = False  # freeze pretrained layers - we only train our new head
+
+base_model.trainable = False
 
 inputs = tf.keras.Input(shape=IMG_SIZE + (3,))
 x = data_augmentation(inputs)
@@ -83,9 +98,15 @@ x = preprocess_input(x)
 x = base_model(x, training=False)
 x = layers.GlobalAveragePooling2D()(x)
 x = layers.Dropout(0.3)(x)
-outputs = layers.Dense(len(class_names), activation="softmax")(x)
+outputs = layers.Dense(
+    len(class_names),
+    activation="softmax"
+)(x)
 
 model = models.Model(inputs, outputs)
+
+# ----- STAGE 1: TRAIN CLASSIFICATION HEAD -----
+print("\n========== STAGE 1: TRAIN CLASSIFICATION HEAD ==========\n")
 
 model.compile(
     optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
@@ -95,44 +116,99 @@ model.compile(
 
 model.summary()
 
-# ----- TRAIN -----
-print("\nStarting training...\n")
-history = model.fit(
+stage1_callbacks = [
+    tf.keras.callbacks.EarlyStopping(
+        monitor="val_loss",
+        patience=4,
+        restore_best_weights=True
+    )
+]
+
+history1 = model.fit(
     train_ds,
     validation_data=val_ds,
-    epochs=EPOCHS,
+    epochs=INITIAL_EPOCHS,
     class_weight=class_weights,
+    callbacks=stage1_callbacks
 )
 
-# ----- SAVE THE MODEL -----
-model.save(MODEL_SAVE_PATH)
-print(f"\nModel saved to: {MODEL_SAVE_PATH}")
+# ----- STAGE 2: FINE-TUNE LAST MOBILE NET LAYERS -----
+print("\n========== STAGE 2: FINE-TUNING ==========\n")
 
-# ----- PRINT FINAL RESULTS -----
-final_train_acc = history.history["accuracy"][-1]
-final_val_acc = history.history["val_accuracy"][-1]
-print(f"\nFinal training accuracy: {final_train_acc:.2%}")
-print(f"Final validation accuracy: {final_val_acc:.2%}")
+base_model.trainable = True
 
-# ----- SAVE TRAINING HISTORY, PLOT CURVES, CONFUSION MATRIX -----
-import json
-import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix, classification_report, ConfusionMatrixDisplay
+# Freeze all but the final selected layers
+for layer in base_model.layers[:-FINE_TUNE_LAYERS]:
+    layer.trainable = False
 
-# Keep the numbers, so the plots can be redrawn without retraining.
+# Keep Batch Normalization layers frozen for stability
+for layer in base_model.layers:
+    if isinstance(layer, layers.BatchNormalization):
+        layer.trainable = False
+
+model.compile(
+    optimizer=tf.keras.optimizers.Adam(learning_rate=0.00001),
+    loss="sparse_categorical_crossentropy",
+    metrics=["accuracy"]
+)
+
+stage2_callbacks = [
+    tf.keras.callbacks.EarlyStopping(
+        monitor="val_loss",
+        patience=4,
+        restore_best_weights=True
+    ),
+    tf.keras.callbacks.ModelCheckpoint(
+        MODEL_SAVE_PATH,
+        monitor="val_loss",
+        save_best_only=True
+    )
+]
+
+history2 = model.fit(
+    train_ds,
+    validation_data=val_ds,
+    epochs=FINE_TUNE_EPOCHS,
+    class_weight=class_weights,
+    callbacks=stage2_callbacks
+)
+
+# ----- LOAD BEST FINE-TUNED MODEL -----
+if os.path.exists(MODEL_SAVE_PATH):
+    model = tf.keras.models.load_model(MODEL_SAVE_PATH)
+else:
+    model.save(MODEL_SAVE_PATH)
+
+print(f"\nBest model saved to: {MODEL_SAVE_PATH}")
+
+# ----- COMBINE TRAINING HISTORY -----
+history = {}
+
+for key in history1.history:
+    history[key] = (
+        history1.history[key] + history2.history[key]
+    )
+
 with open("model/training_history.json", "w") as f:
-    json.dump({k: [float(v) for v in vals] for k, vals in history.history.items()}, f)
+    json.dump(
+        {k: [float(v) for v in vals] for k, vals in history.items()},
+        f
+    )
 
-acc = history.history["accuracy"]
-val_acc = history.history["val_accuracy"]
-loss = history.history["loss"]
-val_loss = history.history["val_loss"]
+# ----- TRAINING CURVES -----
+acc = history["accuracy"]
+val_acc = history["val_accuracy"]
+loss = history["loss"]
+val_loss = history["val_loss"]
+
 epochs_range = range(1, len(acc) + 1)
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
 
 ax1.plot(epochs_range, acc, label="Training accuracy")
 ax1.plot(epochs_range, val_acc, label="Validation accuracy")
+ax1.axvline(len(history1.history["accuracy"]), linestyle="--",
+            label="Fine-tuning starts")
 ax1.set_title("Model accuracy")
 ax1.set_xlabel("Epoch")
 ax1.set_ylabel("Accuracy")
@@ -140,6 +216,8 @@ ax1.legend()
 
 ax2.plot(epochs_range, loss, label="Training loss")
 ax2.plot(epochs_range, val_loss, label="Validation loss")
+ax2.axvline(len(history1.history["loss"]), linestyle="--",
+            label="Fine-tuning starts")
 ax2.set_title("Model loss")
 ax2.set_xlabel("Epoch")
 ax2.set_ylabel("Loss")
@@ -149,18 +227,31 @@ plt.tight_layout()
 plt.savefig("model/training_curves.png", dpi=200, bbox_inches="tight")
 plt.close(fig)
 
-# Confusion matrix. Labels and predictions are collected in the SAME loop,
-# because the dataset order can change between passes.
-y_true, y_pred = [], []
+# ----- FINAL EVALUATION -----
+print("\n========== FINAL EVALUATION ==========\n")
+
+y_true = []
+y_pred = []
+
 for images, labels in val_ds:
     probs = model.predict(images, verbose=0)
     y_true.extend(labels.numpy())
     y_pred.extend(np.argmax(probs, axis=1))
 
-print("\n" + classification_report(y_true, y_pred, target_names=class_names))
+print(classification_report(
+    y_true,
+    y_pred,
+    target_names=class_names
+))
 
 ConfusionMatrixDisplay(
-    confusion_matrix(y_true, y_pred), display_labels=class_names
+    confusion_matrix(y_true, y_pred),
+    display_labels=class_names
 ).plot(cmap="Greens")
-plt.savefig("model/confusion_matrix.png", dpi=200, bbox_inches="tight")
+
+plt.savefig(
+    "model/confusion_matrix.png",
+    dpi=200,
+    bbox_inches="tight"
+)
 plt.show()
