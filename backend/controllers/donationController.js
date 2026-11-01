@@ -214,11 +214,11 @@ const previewDonationBatch = async (req, res) => {
 // body: { verificationCode, centerId? }   centerId is only used when an admin verifies
 const verifyDonationBatch = async (req, res) => {
   try {
-    if (req.userRole !== 'ngo' && req.userRole !== 'admin') {
-      return res.status(403).json({
-        error: 'Only NGO personnel can verify donations'
-      });
-    }
+  if (req.userRole !== 'ngo' && req.userRole !== 'admin') {
+    return res.status(403).json({
+      error: 'Only NGO personnel or admins can verify donations'
+    });
+  }
 
     const verificationCode = String(
       req.body.verificationCode || ''

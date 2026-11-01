@@ -306,12 +306,6 @@ export default function Centres({ user, onLogout }) {
           </h1>
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-600">{user.name}</span>
-            <button
-              onClick={onLogout}
-              className="text-sm bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-1.5"
-            >
-              Log out
-            </button>
           </div>
         </div>
       </header>

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getDonationBasket, prepareDonationBatch, previewDonationBatch, verifyDonationBatch } = require('../controllers/donationController');
+const { getDonationBasket, prepareDonationBatch, previewDonationBatch, verifyDonationBatch } = require('./controllers/donationController');
 const { protect } = require('../middleware/authMiddleware');
 
 router.get('/donation-basket', protect, getDonationBasket);
