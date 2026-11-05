@@ -320,7 +320,7 @@ const useMyCoupon = async (req, res) => {
   }
 };
 
-// ============================== Admin ==============================
+// Admin
 
 // GET /api/admin/rewards
 const adminListRewards = async (req, res) => {

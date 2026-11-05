@@ -11,7 +11,6 @@ const EMPTY_FORM = {
   isActive: true,
 }
 
-// Accepts "5.3416, 100.2819" (the format Google Maps copies).
 function parseCoordinates(text) {
   const parts = text.split(',').map((p) => p.trim())
   if (parts.length !== 2 || parts.some((p) => p === '')) return null

@@ -152,7 +152,7 @@ const deleteMyTip = async (req, res) => {
   }
 };
 
-// ---------- Admin ----------
+// Admin
 
 // GET /api/admin/eco-tips?status=&q=&page=
 const listAllTips = async (req, res) => {

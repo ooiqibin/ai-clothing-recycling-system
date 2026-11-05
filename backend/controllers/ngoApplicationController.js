@@ -52,8 +52,6 @@ const listApplications = async (req, res) => {
 };
 
 // POST /api/admin/ngo-applications/:id/approve
-// body: { centerId }  to link an existing centre
-//   or  { centre: { name, address, latitude, longitude, phone, openingHours } } to create one
 const approveApplication = async (req, res) => {
   try {
     if (!mongoose.isValidObjectId(req.params.id)) {

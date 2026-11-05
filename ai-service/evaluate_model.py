@@ -8,7 +8,7 @@ IMG_SIZE = (224, 224)
 BATCH_SIZE = 16
 MODEL_PATH = "model/clothing_classifier.keras"
 
-# Load the same validation split used during training (same seed = same split)
+# Load the same validation split used during training
 val_ds = tf.keras.utils.image_dataset_from_directory(
     DATASET_DIR,
     validation_split=0.2,

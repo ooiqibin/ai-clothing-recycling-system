@@ -1,6 +1,6 @@
 const DonationBatch = require('../models/DonationBatch');
 const DonationCenter = require('../models/DonationCenter');
-// Make sure this model is registered so populate() can use it.
+
 require('../models/User');
 
 const DAY_MS = 24 * 60 * 60 * 1000;

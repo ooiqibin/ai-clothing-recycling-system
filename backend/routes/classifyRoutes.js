@@ -6,7 +6,7 @@ const { classifyImage } = require('../controllers/classifyController');
 const { protect } = require('../middleware/authMiddleware');
 const persistUpload = require('../middleware/persistUpload');
 
-// The folder is not in git, so make sure it exists (multer will not create it).
+// The folder is not in git, so make sure it exists, multer will not create it.
 fs.mkdirSync('uploads', { recursive: true });
 
 const storage = multer.diskStorage({

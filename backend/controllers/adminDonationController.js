@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const DonationBatch = require('../models/DonationBatch');
 const User = require('../models/User');
-// Make sure this model is registered so populate() can use it.
+
 require('../models/DonationCenter');
 
 const STATUSES = ['awaiting_verification', 'verified'];
@@ -29,10 +29,6 @@ function shape(batch) {
 }
 
 // GET /api/admin/donations
-//   ?status=awaiting_verification|verified
-//   &centerId=<id> | none      (none = verified before centres were recorded)
-//   &q=<donor name, email or 6-digit code>
-//   &page=1
 const listDonations = async (req, res) => {
   try {
     const filter = {};

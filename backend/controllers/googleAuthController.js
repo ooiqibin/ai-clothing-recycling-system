@@ -30,21 +30,7 @@ const googleAuth = async (req, res) => {
         message: 'Invalid or unverified Google account',
       });
     }
-
-    /*
-     * IMPORTANT:
-     * Integrate this verified identity with your EXISTING User model
-     * and JWT-generation logic.
-     *
-     * Find or create the user using the verified Google identity.
-     * Do not accept role, userId, or centreId from req.body.
-     * Preserve existing roles; new public registrations should get
-     * only your app's ordinary user role.
-     *
-     * Return the same response format as your existing
-     * POST /api/auth/login endpoint.
-     */
-
+    
     return res.status(501).json({
       message:
         'Google token verified. Connect this controller to the existing User model and login JWT logic.',

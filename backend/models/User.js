@@ -52,8 +52,6 @@ const userSchema = new mongoose.Schema({
   },
 
   // Self-registered accounts must verify their email before they can log in.
-  // This defaults to true, so existing accounts and accounts made by an admin or a
-  // script keep working. The register endpoints set it to false explicitly.
   emailVerified: {
     type: Boolean,
     default: true,

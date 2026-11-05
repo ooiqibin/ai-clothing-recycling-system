@@ -7,7 +7,6 @@ const { POINTS_PER_DONATED_ITEM } = require('../config/points');
 
 // GET /api/donation-basket
 // Returns the user's un-batched reusable items, plus their currently active
-// batch (if one is awaiting NGO verification).
 const getDonationBasket = async (req, res) => {
   try {
     const pendingItems = await ClassificationResult.find({
@@ -52,7 +51,6 @@ const getDonationBasket = async (req, res) => {
 };
 
 // POST /api/donation-basket/prepare
-// body: { itemIds: [...] }
 const prepareDonationBatch = async (req, res) => {
   try {
     const { itemIds, centerId } = req.body;

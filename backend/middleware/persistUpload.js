@@ -5,8 +5,6 @@ const StoredImage = require('../models/StoredImage');
 const MAX_SIDE = 1024;
 
 // Keeps a small copy of each uploaded photo in the database, because the
-// server's disk is wiped when it restarts. The original file stays on disk
-// for the AI call.
 const persistUpload = async (req, res, next) => {
   if (!req.file) return next();
 

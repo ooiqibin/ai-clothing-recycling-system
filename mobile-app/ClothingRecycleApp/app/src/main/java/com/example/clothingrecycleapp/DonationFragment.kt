@@ -78,7 +78,7 @@ class DonateFragment : Fragment(R.layout.fragment_donate) {
         if (metres < 1000f) "${metres.roundToInt()} m"
         else String.format(Locale.US, "%.1f km", metres / 1000f)
 
-    // Makes the Prepare Donation button look like a real button.
+    // Prepare button
     private fun styleActionButton(button: Button) {
         button.setBackgroundResource(R.drawable.bg_button_primary)
         button.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
